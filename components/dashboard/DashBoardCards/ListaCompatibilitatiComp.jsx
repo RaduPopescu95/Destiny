@@ -8,7 +8,8 @@ import {
   View,
   StyleSheet,
 } from "@react-pdf/renderer";
-import { questions } from "@/data/quiz";
+import { firstQuestions as questions } from "@/data/quiz";
+
 import {
   collection,
   addDoc,
