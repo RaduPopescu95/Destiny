@@ -45,7 +45,7 @@ export default function Subscriptions({
 
   // Funcția de inițiere a checkout-ului
   const initiateCheckout = async (priceId, index, subName) => {
-    if(!userData.username){
+    if(!userData){
       router.push("/login")
     }
     if (!isAccepted[index]) return; // Dacă checkbox-ul pentru cardul respectiv nu este bifat, nu permite inițierea checkout-ului
