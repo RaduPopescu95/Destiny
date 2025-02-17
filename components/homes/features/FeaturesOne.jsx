@@ -4,6 +4,7 @@ import Link from "next/link";
 import { featureOne } from "../../../data/features";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
+
 export default function LearnNewSkill() {
   return (
     <section className="layout-pt-lg layout-pb-lg bg-beige-1">
@@ -15,11 +16,10 @@ export default function LearnNewSkill() {
                 className="about-content__title customSized"
                 data-aos="fade-up"
               >
-                <span>Descoperă</span> noi conexiuni când și unde vrei.
+                <span>Descoperă</span> oportunități unice de conectare, oriunde și oricând.
               </h2>
               <p className="about-content__text" data-aos="fade-up">
-                Folosește lista de mai jos pentru a atrage atenția asupra
-                <br /> avantajelor oferite de platforma noastră.
+                Explorați lista de mai jos pentru a descoperi beneficiile exclusive pe care platforma noastră vi le pune la dispoziție.
               </p>
               <div className="y-gap-20 pt-30">
                 {featureOne.map((elm, i) => (
@@ -47,7 +47,7 @@ export default function LearnNewSkill() {
 
               <div className="d-inline-block mt-30">
                 <Link href="/signup" className="button -md -dark-1 text-white">
-                  Alătură-te Gratuit
+                  Înregistrează-te gratuit
                 </Link>
               </div>
             </div>
@@ -63,7 +63,7 @@ export default function LearnNewSkill() {
                 height={850}
                 style={{ height: "100%", width: "100%" }}
                 src="/assets/img/dating-luvio.png"
-                alt="image"
+                alt="Imagine de prezentare"
               />
             </div>
           </div>

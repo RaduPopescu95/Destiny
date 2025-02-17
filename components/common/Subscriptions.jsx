@@ -45,6 +45,9 @@ export default function Subscriptions({
 
   // Funcția de inițiere a checkout-ului
   const initiateCheckout = async (priceId, index, subName) => {
+    if(!userData.username){
+      router.push("/login")
+    }
     if (!isAccepted[index]) return; // Dacă checkbox-ul pentru cardul respectiv nu este bifat, nu permite inițierea checkout-ului
 
     try {
@@ -253,7 +256,7 @@ export default function Subscriptions({
   </div>
   <div>
     <i className="text-purple-1 fa fa-check pr-8"></i>
-    Notificări pentru compatibilitai noi
+    Notificări pentru compatibilitati noi
   </div>
 </div>
 
