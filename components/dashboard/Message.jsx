@@ -30,13 +30,13 @@ export default function Message() {
   const [newMessage, setNewMessage] = useState("");
   const [unseenMessages, setUnseenMessages] = useState({});
   const router = useRouter()
-  const isSubscribed =
+  let isSubscribed =
   userData?.subscriptionActive ||
   userData?.subscriptionStatus === "canceledUntilEnd";
-
-  const allowedConversation =
+  isSubscribed = true
+  let allowedConversation =
   !isSubscribed && compatibleUsers.length > 0 ? compatibleUsers[0] : null;
-
+allowedConversation = true
 
 
   // Referință pentru containerul de mesaje
@@ -83,17 +83,18 @@ export default function Message() {
             const messagesSnapshot = await getDocs(messagesQuery);
             if (messagesSnapshot.empty) {
               console.log(`No messages found for chat: ${chatPath}`);
-              return { ...userInfo, lastMessageTimestamp: null };
+              return { ...userInfo, mainImage, lastMessageTimestamp: null };
             }
 
             // Găsește ultimul mesaj
             const lastMessage = messagesSnapshot.docs
               .map((doc) => ({ id: doc.id, ...doc.data() }))
               .sort((a, b) => b.timestamp?.toDate() - a.timestamp?.toDate())[0];
-            const mainImage =
-              userInfo?.images?.find((image) => image.isMain)?.fileUri ||
-              userInfo?.images?.[0]?.fileUri ||
-              "/default-avatar.png";
+            const mainImage = userInfo?.images?.[0]?.fileUri 
+            // const mainImage =
+            //   userInfo?.images?.find((image) => image.isMain)?.fileUri ||
+            //   userInfo?.images?.[0]?.fileUri ||
+            //   "/default-avatar.png";
             console.log("main image.....", mainImage)
             return {
               ...userInfo,
@@ -294,7 +295,7 @@ export default function Message() {
                             <Image
                               width={50}
                               height={50}
-                              src={user.mainImage || "/default-avatar.png"}
+                              src={user.mainImage }
                               alt="image"
                               className="size-50"
                               style={{
@@ -368,7 +369,7 @@ export default function Message() {
                         <Image
                           width={50}
                           height={50}
-                          src={selectedUser?.mainImage || "/default-avatar.png"}
+                          src={selectedUser?.mainImage }
                           alt="image"
                           className="size-50"
                           style={{
@@ -441,7 +442,7 @@ export default function Message() {
                 <Image
                   width={50}
                   height={50}
-                  src={selectedUser?.mainImage || "/default-avatar.png"}
+                  src={selectedUser?.mainImage }
                   alt="Avatar"
                   className="size-50"
                   style={{
@@ -504,7 +505,7 @@ export default function Message() {
       >
         {selectedUser?.mainImage ? (
           <Image
-            src={selectedUser?.mainImage || "/default-avatar.png"}
+            src={selectedUser?.mainImage }
             alt="Typing User"
             width={50}
             height={50}
@@ -570,7 +571,7 @@ export default function Message() {
                       onClick={handleSendMessage}
                       className="button -md -purple-1 text-white shrink-0"
                     >
-                      Send Message
+                      Trimite
                     </button>
                   </div>
                 </div>

@@ -15,6 +15,7 @@ import { AuthProvider } from "@/context/AuthContext";
 
 import Cookies from "js-cookie";
 import { GoogleTagManager } from "@next/third-parties/google";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 export default function RootLayout({ children }) {
   const [lang, setLang] = useState("fr"); // Setăm limba implicită la "fr"
@@ -39,7 +40,9 @@ export default function RootLayout({ children }) {
       <head></head>
       <body>
         <Context>
+      
           <AuthProvider>{children}</AuthProvider>
+       
         </Context>
       </body>
     </html>

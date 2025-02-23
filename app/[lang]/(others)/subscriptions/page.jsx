@@ -66,7 +66,7 @@ export default async function Page({ params }) {
       "Conseils des l'équipe de Destiny pour améliorer vos chances de réussite",
       targetLanguage
     ),
-    getStarted: await fetchTranslation("Ma inregistrez acum", targetLanguage),
+    getStarted: await fetchTranslation("Începe acum", targetLanguage),
     tarifsText: await fetchTranslation("Tarifs", targetLanguage),
     methodeText: await fetchTranslation("Methode", targetLanguage),
 

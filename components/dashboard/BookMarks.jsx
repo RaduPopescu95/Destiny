@@ -16,9 +16,11 @@ export default function BookMarks({ translatedTexts }) {
   const [usersPerPage] = useState(5);
 
   // Determină dacă utilizatorul este abonat
-  const isSubscribed =
+  let isSubscribed =
     userData?.subscriptionActive ||
     userData?.subscriptionStatus === "canceledUntilEnd";
+
+  isSubscribed = true
 
   useEffect(() => {
     const fetchCompatibleUsers = async () => {

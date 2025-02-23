@@ -113,7 +113,7 @@ export default async function HomePage({ params }) {
             "Conseils des l'équipe de Destiny pour améliorer vos chances de réussite",
             targetLanguage
           ),
-          getStarted: await fetchTranslation("Ma inregistrez acum", targetLanguage),
+          getStarted: await fetchTranslation("Începe acum", targetLanguage),
           tarifsText: await fetchTranslation("Tarifs", targetLanguage),
           methodeText: await fetchTranslation("Methode", targetLanguage),
       
@@ -149,7 +149,7 @@ export default async function HomePage({ params }) {
         <FeaturesOne />
         <WhyCourse />
         <TestimonialsOne />
-    <Subscriptions
+    {/* <Subscriptions
           bookingText={translatedLinks.bookingText}
           paymentOneTimeText={translatedLinks.paymentOneTimeText}
           oneTimeFeature1={translatedLinks.oneTimeFeature1}
@@ -159,7 +159,7 @@ export default async function HomePage({ params }) {
           getStarted={translatedLinks.getStarted}
           acceptTermsText={translatedLinks.acceptTermsText}
           translatedLinks={translatedLinks}
-        />
+        /> */}
         {/* <Instructors /> */}
         {/* <GetApp /> */}
         {/* <Blog /> */}

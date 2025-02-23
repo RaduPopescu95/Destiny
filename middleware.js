@@ -15,8 +15,7 @@ export function middleware(req) {
 
   // Verificăm dacă există query-ul "lang" în URL și utilizăm valoarea acestuia dacă este prezent
   const langParam = searchParams.get("lang");
-  // let locale = langParam || req.cookies.get("NEXT_LOCALE")?.value || "ro";
-  let locale = "ro";
+  let locale = langParam || req.cookies.get("NEXT_LOCALE")?.value || "fr";
 
   const url = req.nextUrl.clone();
 
@@ -36,7 +35,8 @@ export function middleware(req) {
   }
 
   // Dacă calea nu începe cu limba selectată, facem redirecționarea
-  if (!pathname.match(/^\/(en|ro|fr|nl)(\/|$)/)) {
+  const supportedLangs = "bg|hr|cz|en|fr|de|gr|in|id|it|nl|pl|ro|sk|es";
+  if (!pathname.match(new RegExp(`^\\/(${supportedLangs})(\\/|$)`))) {
     url.pathname = `/${locale}${pathname}`.replace(/\/\//g, "/");
     return NextResponse.redirect(url);
   }

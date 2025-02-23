@@ -78,7 +78,7 @@ export default function Menu({
                 Acasă
               </Link>
             </li>
-            <li className="menu-item-has-children">
+            {/* <li className="menu-item-has-children">
               <Link
                 data-barba
                 href="/subscriptions"
@@ -86,7 +86,7 @@ export default function Menu({
               >
                Abonamente
               </Link>
-            </li>
+            </li> */}
 
             {/* <li className="menu-item-has-children">
               <Link
@@ -97,9 +97,9 @@ export default function Menu({
                 Contact
               </Link>
             </li> */}
-            {/* <li className="menu-item-has-children">
+            <li className="menu-item-has-children">
               <LanguageSwitch />
-            </li> */}
+            </li>
 
             {/* <li className="menu-item-has-children -has-mega-menu">
               <Link

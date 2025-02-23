@@ -145,14 +145,14 @@ export default function HeaderDashboard({
                         Acasă
                       </Link>
                     </div>
-                    <div className="d-flex items-center text-14 text-dark-1 ml-20">
+                    {/* <div className="d-flex items-center text-14 text-dark-1 ml-20">
                       <Link
                         href="/subscriptions"
                         className="d-block text-dark-1"
                       >
                    Abonamente
                       </Link>
-                    </div>
+                    </div> */}
                     {/* <div className="d-flex items-center text-14 text-dark-1 ml-20">
                       <Link
                         href="https://real-amor.com/"
@@ -161,9 +161,9 @@ export default function HeaderDashboard({
                         {tarifsText}
                       </Link>
                     </div> */}
-                    {/* <div className="d-flex items-center text-14 text-dark-1 ml-20">
+                    <div className="d-flex items-center text-14 text-dark-1 ml-20">
                       <LanguageSwitch />
-                    </div> */}
+                    </div>
                   </div>
                 </div>
 
