@@ -3,48 +3,58 @@ import { NextRequest, NextResponse } from "next/server";
 export function middleware(req) {
   const { pathname, searchParams } = req.nextUrl;
 
-  // Excludem rutele care nu trebuie redirecționate, cum ar fi resursele statice și fișierele specifice
+  // Excludem rutele pentru resurse statice, favicon, fișiere cu extensii sau endpoint-uri API
   if (
-    pathname.startsWith("/_next/static") || // Exclude resursele Next.js generate automat
-    pathname.startsWith("/favicon.ico") || // Exclude favicon
-    pathname.includes(".") || // Exclude orice fișier ce conține o extensie (ex. .css, .js, .png)
-    pathname.startsWith("/api") // Exclude orice API endpoint
+    pathname.startsWith("/_next/static") ||
+    pathname.startsWith("/favicon.ico") ||
+    pathname.includes(".") ||
+    pathname.startsWith("/api")
   ) {
-    return NextResponse.next(); // Permite continuarea fără redirecționare
+    return NextResponse.next();
   }
 
-  // Verificăm dacă există query-ul "lang" în URL și utilizăm valoarea acestuia dacă este prezent
+  // Verificăm dacă există parametrul "lang" în query string
   const langParam = searchParams.get("lang");
   let locale = langParam || req.cookies.get("NEXT_LOCALE")?.value || "fr";
 
   const url = req.nextUrl.clone();
 
   if (langParam) {
-    // Eliminăm parametrul "lang" din query string
+    // Eliminăm parametrul "lang" din query string și setăm cookie-ul
     url.searchParams.delete("lang");
-
-    // Setăm cookie-ul pentru limba selectată
     const response = NextResponse.redirect(url);
     response.cookies.set("NEXT_LOCALE", langParam, {
       path: "/",
-      httpOnly: true, // pentru securitate (cookie-ul este accesibil doar serverului)
-      secure: process.env.NODE_ENV === "production", // doar prin HTTPS în producție
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
     });
-
     return response;
   }
 
-  // Dacă calea nu începe cu limba selectată, facem redirecționarea
   const supportedLangs = "bg|hr|cs|en|fr|de|el|hi|id|it|nl|pl|ro|sk|es";
-  if (!pathname.match(new RegExp(`^\\/(${supportedLangs})(\\/|$)`))) {
+  // Regex care prinde unul sau mai multe segmente de limbă la începutul căii
+  const languageRegex = new RegExp(`^(\\/(${supportedLangs}))+`, "i");
+  const match = pathname.match(languageRegex);
+
+  if (match) {
+    // Extragem toate segmentele de coduri de limbă prezente
+    const localesArray = match[0].split("/").filter(Boolean);
+    // Dacă sunt duplicate sau primul segment diferă de cel dorit, refacem calea
+    if (localesArray.length > 1 || localesArray[0] !== locale) {
+      const cleanedPath = pathname.replace(languageRegex, "/");
+      url.pathname = `/${locale}${cleanedPath}`.replace(/\/\//g, "/");
+      return NextResponse.redirect(url);
+    }
+  } else {
+    // Dacă nu există prefix de limbă, îl adăugăm
     url.pathname = `/${locale}${pathname}`.replace(/\/\//g, "/");
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next(); // Permite continuarea dacă ruta începe cu limba corectă
+  return NextResponse.next();
 }
 
-// Configurăm middleware-ul pentru a se aplica la toate rutele
+// Aplicăm middleware-ul la toate rutele
 export const config = {
-  matcher: ["/:path*"], // Aplicăm middleware-ul la toate rutele
+  matcher: ["/:path*"],
 };
