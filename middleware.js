@@ -35,7 +35,7 @@ export function middleware(req) {
   }
 
   // Dacă calea nu începe cu limba selectată, facem redirecționarea
-  const supportedLangs = "bg|hr|cz|en|fr|de|gr|in|id|it|nl|pl|ro|sk|es";
+  const supportedLangs = "bg|hr|cs|en|fr|de|el|hi|id|it|nl|pl|ro|sk|es";
   if (!pathname.match(new RegExp(`^\\/(${supportedLangs})(\\/|$)`))) {
     url.pathname = `/${locale}${pathname}`.replace(/\/\//g, "/");
     return NextResponse.redirect(url);

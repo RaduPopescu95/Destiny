@@ -14,12 +14,12 @@ const LanguageSwitch = ({ closePopup }) => {
   const flagImages = {
     bg: "/assets/img/flags/bulgaria.png",     // Bulgaria
     hr: "/assets/img/flags/croatia.png",      // Croatia
-    cz: "/assets/img/flags/czech.png",        // Czech
+    cs: "/assets/img/flags/czech.png",        // Czech
     en: "/assets/img/flags/english.png",      // English
     fr: "/assets/img/flags/france.png",       // France
     de: "/assets/img/flags/germany.png",      // Germany
-    gr: "/assets/img/flags/greece.png",       // Greece
-    in: "/assets/img/flags/india.png",        // India
+    el: "/assets/img/flags/greece.png",       // Greece
+    hi: "/assets/img/flags/india.png",        // India
     id: "/assets/img/flags/indonesia.png",    // Indonesia
     it: "/assets/img/flags/italy.png",        // Italy
     nl: "/assets/img/flags/netherlands.png",  // Netherlands
@@ -44,7 +44,7 @@ const LanguageSwitch = ({ closePopup }) => {
     changeLanguage(newLocale); // Schimbăm limba în context
 
     // Eliminăm prefixul de limbă din calea curentă
-    const supportedLangs = "bg|hr|cz|en|fr|de|gr|in|id|it|nl|pl|ro|sk|es";
+    const supportedLangs = "bg|hr|cs|en|fr|de|el|hi|id|it|nl|pl|ro|sk|es";
     const currentPath = pathname.replace(new RegExp(`^\\/(${supportedLangs})(\\/|$)`), "/");
     
     // Navigăm către noul URL cu limba selectată, dar fără adăugarea duplicată a limbii
