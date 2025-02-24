@@ -13,6 +13,7 @@ export default async function Page({ params }) {
   console.log("targe lagn..", targetLanguage);
 
   const translatedLinks = {
+       acasaText: await fetchTranslation("Acasa", targetLanguage),
     termsAndConditionsText: await fetchTranslation(
       "Dând clic pe Înregistrare, accepți Mențiunile legale. Descoperă cum colectăm, folosim și distribuim datele tale citind Politica noastră de confidențialitate și cum folosim cookie-urile și alte tehnologii similare consultând Politica noastră de cookie-uri. Este posibil să primești notificări prin SMS din partea noastră și te poți dezabona oricând.",
       targetLanguage

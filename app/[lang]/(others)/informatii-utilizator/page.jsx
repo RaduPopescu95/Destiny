@@ -158,6 +158,7 @@ export default async function page({ params }) {
       "Stare abonament utilizator",
       targetLanguage
     ),
+    acasaText: await fetchTranslation("Acasa", targetLanguage),
   };
 
   return (
@@ -167,6 +168,7 @@ export default async function page({ params }) {
         <HeaderDashboard
           methodeText={translatedTexts.methodeText}
           tarifsText={translatedTexts.tarifsText}
+          translatedTexts={translatedTexts}
         />
         <div className="content-wrapper js-content-wrapper overflow-hidden">
           <div

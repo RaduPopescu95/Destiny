@@ -10,6 +10,7 @@ export default async function page({ params }) {
 
   // Obținem traducerile pentru textele din sidebar și restul componentelor
   const translatedTexts = {
+    acasaText: await fetchTranslation("Acasa", targetLanguage),
     activeStatusText: await fetchTranslation("Active", targetLanguage),
     subscriptionCanceledUntilText: await fetchTranslation(
       "Subscription canceled, valid until",

@@ -12,6 +12,7 @@ export default async function Page({ params }) {
   const targetLanguage = params.lang || "en";
 
   const translatedLinks = {
+    acasaText: await fetchTranslation("Acasa", targetLanguage),
     home: await fetchTranslation("Acasă", targetLanguage),
     realAmor: await fetchTranslation("Destiny", targetLanguage),
     pricing: await fetchTranslation("Plată finalizată", targetLanguage),

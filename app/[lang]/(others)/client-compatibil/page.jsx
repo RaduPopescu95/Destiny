@@ -16,6 +16,7 @@ export default async function page({ params }) {
   console.log("target...language...", targetLanguage);
   // Obținem traducerile pentru textele statice
   const translatedTexts = {
+    acasaText: await fetchTranslation("Acasa", targetLanguage),
     quizText: await fetchTranslation("Raspunsuri chestionar", targetLanguage),
     downloadQuizText: await fetchTranslation(
       "Download quiz answers",
@@ -188,6 +189,7 @@ export default async function page({ params }) {
         <HeaderDashboard
           methodeText={translatedTexts.methodeText}
           tarifsText={translatedTexts.tarifsText}
+          translatedTexts={translatedTexts}
         />
         <div className="content-wrapper js-content-wrapper overflow-hidden">
           <div
