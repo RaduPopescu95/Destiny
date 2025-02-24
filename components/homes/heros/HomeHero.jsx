@@ -56,7 +56,7 @@ const hero_content = {
 };
 const { title, text_underline, info_hero, starts } = hero_content;
 
-const HomeHero = () => {
+const HomeHero = ({translatedLinks}) => {
   useEffect(() => {
     const parallaxIt = () => {
       const target = document.querySelectorAll(".js-mouse-move-container");
@@ -106,7 +106,7 @@ const HomeHero = () => {
                 data-aos-delay="500"
               >
                 <h1 className="masthead__title">
-                  {title}{" "}
+                  {translatedLinks.heroTitleText}{" "}
                   <span className="text-green-1 underline">
                     {text_underline}
                   </span>
@@ -116,7 +116,8 @@ const HomeHero = () => {
                   data-aos-duration="100"
                   className="masthead__text"
                 >
-                  {info_hero}
+              {translatedLinks.construiesteText}
+      <br /> {translatedLinks.construiesteTex2}
                 </p>
                 <div
                   data-aos="fade-up"
@@ -129,7 +130,7 @@ const HomeHero = () => {
                       href="/signup"
                       className="button -md -amourpurple-1 text-white"
                     >
-                      Începe acum
+                      {translatedLinks.ctaText}
                     </Link>
                   </div>
                   {/* <div className="col-12 col-sm-auto">

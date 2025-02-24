@@ -75,7 +75,7 @@ export default function Menu({
                 href="/"
                 className={menuItem == "Home" ? "activeMenu" : ""}
               >
-                Acasă
+                {translatedLinks.acasaText}
               </Link>
             </li>
             {/* <li className="menu-item-has-children">

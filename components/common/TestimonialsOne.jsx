@@ -9,7 +9,7 @@ import { testimonials } from "../../data/tesimonials";
 import { counters } from "../../data/count";
 // SwiperCore.use([Pagination]);
 
-export default function TestimonialsOne() {
+export default function TestimonialsOne({translatedLinks}) {
   const [showSlider, setShowSlider] = useState(false);
   useEffect(() => {
     setShowSlider(true);
@@ -21,7 +21,7 @@ export default function TestimonialsOne() {
           <div className="col-auto">
             <div className="sectionTitle ">
               <h2 className="sectionTitle__title text-white-1">
-              Ce cred utilizatorii despre noi
+              {translatedLinks.whatTheyThinkText}
 
 
               </h2>
@@ -114,20 +114,32 @@ export default function TestimonialsOne() {
           </div>
         </div>
 
-        <div className="row y-gap-30  counter__row">
-          {counters.map((elm, i) => (
-            <div
-              key={i}
-              className="col-lg-3 col-sm-6"
-              data-aos="fade-left"
-              data-aos-duration={(i + 1) * 350}
-            >
-              <div className="counter -type-1">
-                <div className="counter__number">{elm.number}</div>
-                <div className="counter__title">{elm.title}</div>
-              </div>
+         {/* Secțiunea pentru counters, scrisă explicit, fără .map */}
+         <div className="row y-gap-30 counter__row">
+          <div className="col-lg-3 col-sm-6" data-aos="fade-left" data-aos-duration="350">
+            <div className="counter -type-1">
+              <div className="counter__number">150,000+</div>
+              <div className="counter__title">{translatedLinks.countersText1}</div>
             </div>
-          ))}
+          </div>
+          <div className="col-lg-3 col-sm-6" data-aos="fade-left" data-aos-duration="700">
+            <div className="counter -type-1">
+              <div className="counter__number">95,000+</div>
+              <div className="counter__title">{translatedLinks.countersText2}</div>
+            </div>
+          </div>
+          <div className="col-lg-3 col-sm-6" data-aos="fade-left" data-aos-duration="1050">
+            <div className="counter -type-1">
+              <div className="counter__number">45,000+</div>
+              <div className="counter__title">{translatedLinks.countersText3}</div>
+            </div>
+          </div>
+          <div className="col-lg-3 col-sm-6" data-aos="fade-left" data-aos-duration="1400">
+            <div className="counter -type-1">
+              <div className="counter__number">95%</div>
+              <div className="counter__title">{translatedLinks.countersText4}</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

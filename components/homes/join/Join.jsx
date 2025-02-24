@@ -1,20 +1,20 @@
 import React from "react";
 import Link from "next/link";
-export default function Join() {
+export default function Join({translatedLinks}) {
   return (
     <section className="layout-pt-md layout-pb-md bg-dark-1">
       <div className="container">
         <div className="row y-gap-20 justify-between items-center">
           <div className="col-xl-4 col-lg-5">
             <h2 className="text-30 lh-15 text-white">
-              Alătură-te celor peste
-              <span className="text-green-1"> 8 milioane de persoane</span> care caută conexiuni autentice bazate pe astrologie și numerologie
+              {translatedLinks.joinText1}{" "}
+              <span className="text-green-1">{translatedLinks.joinText2}</span> {translatedLinks.joinText3}{" "}
             </h2>
           </div>
 
           <div className="col-auto">
             <Link href="#" className="button -md -amourpurple-1 text-dark-1">
-            Conectează-te cu persoanele potrivite!
+            {translatedLinks.joinText4}
             </Link>
           </div>
         </div>

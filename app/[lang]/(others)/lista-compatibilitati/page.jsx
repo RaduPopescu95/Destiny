@@ -310,6 +310,14 @@ export default async function page({ params }) {
       "Rezultatele Chestionărului pentru",
       targetLanguage
     ),
+    bookmarksText1: await fetchTranslation(
+      "Lista compatibilități",
+      targetLanguage
+    ),
+    bookmarksText2: await fetchTranslation(
+      "Momentan nu aveți compatibilități disponibile. Vă rugăm să reveniți mai târziu pentru a descoperi conexiunile perfecte!",
+      targetLanguage
+    ),
   };
 
   return (

@@ -37,6 +37,7 @@ export default async function Page({ params }) {
     signUpText: await fetchTranslation("Sign up", targetLanguage),
     logInText: await fetchTranslation("Log in", targetLanguage),
     contText: await fetchTranslation("Cont", targetLanguage),
+    acasaText: await fetchTranslation("Acasa", targetLanguage),
   };
 
   return (

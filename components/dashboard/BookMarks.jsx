@@ -83,7 +83,7 @@ export default function BookMarks({ translatedTexts }) {
       <div className="dashboard__content bg-light-4">
         <div className="row pb-50 mb-10">
           <div className="col-auto">
-            <h1 className="text-30 lh-12 fw-700">Lista compatibilități</h1>
+            <h1 className="text-30 lh-12 fw-700">{translatedTexts.bookmarksText1}</h1>
           </div>
         </div>
 
@@ -107,8 +107,8 @@ export default function BookMarks({ translatedTexts }) {
                   ) : (
                     <div className="col-12 text-center">
                       <p>
-                        Momentan nu aveți compatibilități disponibile. Vă rugăm să reveniți mai târziu pentru a descoperi conexiunile perfecte!
-                      </p>
+                      {translatedTexts.bookmarksText2} 
+                    </p>
                     </div>
                   )}
                 </div>
