@@ -81,16 +81,18 @@ allowedConversation = true
             );
 
             const messagesSnapshot = await getDocs(messagesQuery);
-            if (messagesSnapshot.empty) {
-              console.log(`No messages found for chat: ${chatPath}`);
-              return { ...userInfo, mainImage, lastMessageTimestamp: null };
-            }
+        
 
             // Găsește ultimul mesaj
             const lastMessage = messagesSnapshot.docs
               .map((doc) => ({ id: doc.id, ...doc.data() }))
               .sort((a, b) => b.timestamp?.toDate() - a.timestamp?.toDate())[0];
             const mainImage = userInfo?.images?.[0]?.fileUri 
+
+            if (messagesSnapshot.empty) {
+              console.log(`No messages found for chat: ${chatPath}`);
+              return { ...userInfo, mainImage, lastMessageTimestamp: null };
+            }
             // const mainImage =
             //   userInfo?.images?.find((image) => image.isMain)?.fileUri ||
             //   userInfo?.images?.[0]?.fileUri ||
