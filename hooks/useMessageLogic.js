@@ -11,7 +11,7 @@ import {
   addDoc,
   onSnapshot,
   setDoc,
-  updateDoc, // import pentru actualizarea documentelor
+  updateDoc,
 } from "firebase/firestore";
 import { query } from "firebase/database";
 
@@ -23,43 +23,43 @@ export function useMessageLogic() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [unseenMessages, setUnseenMessages] = useState({});
   const [isTyping, setIsTyping] = useState(false);
   const [selectedUserOnline, setSelectedUserOnline] = useState(false);
 
-  let isSubscribed =
-    userData?.subscriptionActive ||
-    userData?.subscriptionStatus === "canceledUntilEnd";
-  // For demo purposes, forțează true:
-  isSubscribed = true;
-  let allowedConversation =
-    !isSubscribed && compatibleUsers.length > 0 ? compatibleUsers[0] : null;
-  allowedConversation = true;
+  // Dictionar în care stocăm typing pt. fiecare user compatibil
+  const [typingStates, setTypingStates] = useState({});
+
+  // Pentru demo, forțăm isSubscribed = true
+  let isSubscribed = true;
+  let allowedConversation = true;
 
   // Referință pentru containerul de mesaje
   const messagesEndRef = useRef(null);
 
-  // Funcție pentru scroll la ultimul mesaj
+  // Scroll la ultimul mesaj
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // ACTUALIZEAZĂ ONLINE SAU OFFLINE
+  // Marcare online/offline
   useEffect(() => {
     if (!userData?.uid) return;
     const userDocRef = doc(db, "Users", userData.uid);
-    // La montare, setează online = true
-    setDoc(userDocRef, { isOnline: true }, { merge: true })
-      .catch((err) => console.error("Error setting online status:", err));
-    
-    // La demontare, setează online = false
+
+    // La montare → isOnline: true
+    setDoc(userDocRef, { isOnline: true }, { merge: true }).catch((err) =>
+      console.error("Error setting online status:", err)
+    );
+
+    // La demontare → isOnline: false
     return () => {
-      setDoc(userDocRef, { isOnline: false }, { merge: true })
-        .catch((err) => console.error("Error resetting online status:", err));
+      setDoc(userDocRef, { isOnline: false }, { merge: true }).catch((err) =>
+        console.error("Error resetting online status:", err)
+      );
     };
   }, [userData?.uid]);
-  
-  // Fetch compatible users and last message
+
+  // Fetch lista userilor compatibili + ultimul mesaj
   useEffect(() => {
     const fetchCompatibleUsers = async () => {
       if (!userData?.uid) return;
@@ -81,33 +81,43 @@ export function useMessageLogic() {
 
             const userDocRef = doc(db, "Users", userId);
             const userSnapshot = await getDoc(userDocRef);
+            if (!userSnapshot.exists()) return null;
+
             const userInfo = { id: userSnapshot.id, ...userSnapshot.data() };
 
-            // Build chatPath by sorting UIDs
+            // Construieste chatPath
             const chatPath = [userId, userData.uid].sort().join("-");
             const messagesQuery = query(
               collection(db, "Chats", chatPath, "Messages")
             );
             const messagesSnapshot = await getDocs(messagesQuery);
 
-            const lastMessage = messagesSnapshot.docs
-              .map((doc) => ({ id: doc.id, ...doc.data() }))
-              .sort((a, b) => b.timestamp?.toDate() - a.timestamp?.toDate())[0];
-            const mainImage = userInfo?.images?.[0]?.fileUri;
-
             if (messagesSnapshot.empty) {
-              console.log(`No messages found for chat: ${chatPath}`);
-              return { ...userInfo, mainImage, lastMessageTimestamp: null };
+              return {
+                ...userInfo,
+                mainImage: userInfo?.images?.[0]?.fileUri || null,
+                lastMessage: null,
+                lastMessageTimestamp: null,
+              };
             }
-            console.log("main image.....", mainImage);
+
+            // Gaseste ultimul mesaj (cel mai recent)
+            const allMsgs = messagesSnapshot.docs
+              .map((doc) => ({ id: doc.id, ...doc.data() }))
+              .sort((a, b) => b.timestamp?.toDate() - a.timestamp?.toDate());
+
+            const lastMessage = allMsgs[0];
+
             return {
               ...userInfo,
-              mainImage,
+              mainImage: userInfo?.images?.[0]?.fileUri || null,
+              lastMessage: lastMessage, // păstrăm tot obiectul
               lastMessageTimestamp: lastMessage?.timestamp?.toDate() || null,
             };
           })
         );
 
+        // Sortează după timestamp
         const sortedUsers = usersWithLastMessage
           .filter(Boolean)
           .sort((a, b) => {
@@ -117,7 +127,7 @@ export function useMessageLogic() {
             if (b.lastMessageTimestamp) return 1;
             return 0;
           });
-        console.log("sortedUsers...", sortedUsers);
+
         setCompatibleUsers(sortedUsers);
       } catch (error) {
         console.error("Error fetching compatible users:", error);
@@ -127,19 +137,48 @@ export function useMessageLogic() {
     fetchCompatibleUsers();
   }, [userData?.uid]);
 
-  // Scroll to bottom when messages change
+  // Abonare la "Typing" pentru fiecare user din listă - să putem afișa "Typing..." în sidebar
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!compatibleUsers || !userData?.uid) return;
 
-  // Real-time listener for messages between user and selectedUser
+    // Dezabonăm la unmount
+    const unsubscribes = [];
+
+    compatibleUsers.forEach((u) => {
+      if (!u?.id) return;
+
+      // Cheia de chat user->me (ordinea poate varia, dar important e să fie la fel ca la setTyping)
+      const chatPath = `${u.id}-${userData.uid}`;
+      const typingRef = doc(db, "Chats", chatPath, "Typing", "State");
+      
+      const unsubscribe = onSnapshot(typingRef, (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
+          // Este "true" doar dacă "typingUid" nu este al meu
+          const isTypingRemote = data.isTyping && data.typingUid !== userData.uid;
+          setTypingStates((prev) => ({ ...prev, [u.id]: isTypingRemote }));
+        } else {
+          setTypingStates((prev) => ({ ...prev, [u.id]: false }));
+        }
+      });
+      
+
+      unsubscribes.push(unsubscribe);
+    });
+
+    return () => {
+      unsubscribes.forEach((unsub) => unsub());
+    };
+  }, [compatibleUsers, userData?.uid]);
+
+  // Ascultă mesaje în timp real cu userul selectat
   useEffect(() => {
     if (!selectedUser || !userData?.uid) return;
     if (!isSubscribed && allowedConversation && selectedUser.id !== allowedConversation.id) {
       router.push("/subscriptions");
       return;
     }
-    const chatPath = `${userData.uid}-${selectedUser.id}`;
+    const chatPath = [userData.uid, selectedUser.id].sort().join("-");
     const chatRef = collection(db, "Chats", chatPath, "Messages");
     const unsubscribe = onSnapshot(chatRef, (snapshot) => {
       const fetchedMessages = snapshot.docs
@@ -150,7 +189,12 @@ export function useMessageLogic() {
     return () => unsubscribe();
   }, [selectedUser, userData?.uid]);
 
-  // Function to handle sending messages
+  // Scroll la ultimul mesaj când `messages` se schimbă
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Trimite mesaj
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedUser) return;
     if (!isSubscribed && allowedConversation && selectedUser.id !== allowedConversation.id) {
@@ -162,7 +206,7 @@ export function useMessageLogic() {
       receiverId: selectedUser.id,
       content: newMessage,
       timestamp: new Date(),
-      status: "sent", // Status inițial
+      status: "sent",
     };
     // Adăugăm mesajul în ambele locații
     await addDoc(
@@ -176,7 +220,7 @@ export function useMessageLogic() {
     setNewMessage("");
   };
 
-  // Handle sending message on Enter key press
+  // Enter trimite mesaj (dacă nu e SHIFT+ENTER)
   const handleKeyDown = (e) => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
@@ -191,7 +235,7 @@ export function useMessageLogic() {
     }
   };
 
-  // Listen for typing state
+  // Ascultă typing doar pentru userul selectat
   useEffect(() => {
     if (!selectedUser || !userData?.uid) return;
     const typingRef = doc(
@@ -201,91 +245,84 @@ export function useMessageLogic() {
       "Typing",
       "State"
     );
-    console.log("Listening to typing updates for:", typingRef.path);
     const unsubscribe = onSnapshot(typingRef, (docSnapshot) => {
       if (docSnapshot.exists()) {
-        console.log("Typing document data:", docSnapshot.data());
         setIsTyping(docSnapshot.data()?.isTyping || false);
       } else {
-        console.log("Typing document does not exist at:", typingRef.path);
+        setIsTyping(false);
       }
     });
     return () => unsubscribe();
   }, [selectedUser, userData?.uid]);
 
-  // Handle typing: set typing state to true, then reset after 3 sec.
-  const handleTyping = async () => {
+  // Marcare "isTyping: true" pentru doc-ul invers (selectedUser.id - userData.uid)
+// Marcare "isTyping: true" + cine tastează
+const handleTyping = async () => {
     if (!selectedUser || !userData?.uid) return;
     const typingRef = doc(
       db,
       "Chats",
-      `${selectedUser.id}-${userData.uid}`, // Ensure correct order
+      `${selectedUser.id}-${userData.uid}`,
       "Typing",
       "State"
     );
     try {
-      console.log("Setting typing state to true at:", typingRef.path);
-      await setDoc(typingRef, { isTyping: true }, { merge: true });
-      console.log("Typing state set to true successfully");
+      await setDoc(
+        typingRef,
+        {
+          isTyping: true,
+          typingUid: userData.uid, // adăugăm cine tastează
+        },
+        { merge: true }
+      );
+  
       setTimeout(async () => {
-        console.log("Resetting typing state to false at:", typingRef.path);
-        await setDoc(typingRef, { isTyping: false }, { merge: true });
-        console.log("Typing state reset to false successfully");
+        await setDoc(
+          typingRef,
+          {
+            isTyping: false,
+            typingUid: null,
+          },
+          { merge: true }
+        );
       }, 3000);
     } catch (error) {
       console.error("Error in handleTyping:", error);
     }
   };
-
-  // Listen for online status of selectedUser
+  
+  // Ascultă online status pentru userul selectat
   useEffect(() => {
     if (!selectedUser) return;
     const userDocRef = doc(db, "Users", selectedUser.id);
     const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
       if (docSnapshot.exists()) {
-        const data = docSnapshot.data();
-        console.log("User document data:", data); // Debug: afișează toate datele din document
-        const online = data.isOnline;
-        console.log("Online status received:", online); // Debug: afișează statusul online
-        setSelectedUserOnline(online || false);
-      } else {
-        console.log("Documentul pentru utilizatorul selectat nu există.");
+        setSelectedUserOnline(docSnapshot.data()?.isOnline || false);
       }
     });
     return () => unsubscribe();
   }, [selectedUser]);
 
-  // Actualizează statusul mesajelor la "seen" pentru toate mesajele (inclusiv cele trimise)
+  // Marcare "seen" pentru mesajele primite de la userul selectat
   useEffect(() => {
     if (!selectedUser || !userData?.uid) return;
-  
     messages.forEach((msg) => {
-      // Marcam ca "seen" doar mesajele primite de la alt utilizator (nu ale tale)
       if (msg.senderId !== userData.uid && msg.status !== "seen") {
         const chatPath1 = `${userData.uid}-${selectedUser.id}`;
         const chatPath2 = `${selectedUser.id}-${userData.uid}`;
         const msgRef1 = doc(db, "Chats", chatPath1, "Messages", msg.id);
         const msgRef2 = doc(db, "Chats", chatPath2, "Messages", msg.id);
-  
-        updateDoc(msgRef1, { status: "seen" })
-          .then(() =>
-            console.log("Message status updated to seen in chatPath1")
-          )
-          .catch((err) =>
-            console.error("Error updating message status in chatPath1:", err)
-          );
-  
-        updateDoc(msgRef2, { status: "seen" })
-          .then(() =>
-            console.log("Message status updated to seen in chatPath2")
-          )
-          .catch((err) =>
-            console.error("Error updating message status in chatPath2:", err)
-          );
+
+        updateDoc(msgRef1, { status: "seen" }).catch((err) =>
+          console.error("Error updating message status in chatPath1:", err)
+        );
+        updateDoc(msgRef2, { status: "seen" }).catch((err) =>
+          console.error("Error updating message status in chatPath2:", err)
+        );
       }
     });
   }, [messages, selectedUser, userData?.uid]);
-  
+
   return {
     compatibleUsers,
     selectedUser,
@@ -293,15 +330,15 @@ export function useMessageLogic() {
     messages,
     newMessage,
     setNewMessage,
-    unseenMessages,
-    messagesEndRef,
     handleSendMessage,
     handleKeyDown,
     isTyping,
     handleTyping,
     isSubscribed,
     allowedConversation,
-    userData, // adăugăm userData aici
-    selectedUserOnline, // online status indicator
+    userData,
+    selectedUserOnline,
+    typingStates, // pentru sidebar
+    messagesEndRef,
   };
 }
