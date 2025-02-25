@@ -312,6 +312,10 @@ export default function Message() {
 
 
                   {/* Indicator "Typing..." în zona de mesaje (pentru userul selectat) */}
+                  {/* Indicator "Typing..." în zona de mesaje (pentru userul selectat) */}
+                  {/* Indicator "Typing..." în zona de mesaje (pentru userul selectat) */}
+                  {/* Indicator "Typing..." în zona de mesaje (pentru userul selectat) */}
+                  {/* Indicator "Typing..." în zona de mesaje (pentru userul selectat) */}
                   {isTyping && (
                     <div
                       className="d-flex align-items-center mt-10"
