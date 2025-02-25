@@ -125,8 +125,8 @@ export const QuizResultsDocument = ({
 }) => {
   const allSections = [
     {
-      sectionName: "Premières Questions",
-      sectionNameAlt: "Premières Questions",
+      sectionName: "Întrebări",
+      sectionNameAlt: "Întrebări",
       questions: firstQuestions,
       responses: userData?.responses?.firstQuestions || [],
     },
@@ -155,7 +155,7 @@ export const QuizResultsDocument = ({
     <Document>
       <Page style={styles.page}>
         <Text style={styles.title}>
-          Résultats du Questionnaire pour {userData?.username || "Utilisateur"}
+          Rezultate chestionar {userData?.username || "Utilisateur"}
         </Text>
 
         {allSections
@@ -217,7 +217,7 @@ export const QuizResultsDocument = ({
                       {question.type === "image-selection" ? (
                         <View style={styles.imageOption}>
                           <Text style={styles.answer}>
-                            Réponse de l'utilisateur :
+                            Raspuns :
                           </Text>
                           <Image
                             src={getImagePath(userAnswer?.answer)}
@@ -226,7 +226,7 @@ export const QuizResultsDocument = ({
                         </View>
                       ) : (
                         <Text style={styles.answer}>
-                          Réponse de l'utilisateur :{" "}
+                          Raspuns :{" "}
                           {formatAnswer(userAnswer?.answer)}
                         </Text>
                       )}
