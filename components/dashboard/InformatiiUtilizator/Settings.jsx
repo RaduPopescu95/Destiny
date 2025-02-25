@@ -58,7 +58,7 @@ export default function Settings({ translatedTexts }) {
   const [currentUserResponses, setCurrentUserResponses] = useState({});
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage] = useState(5);
+  const [usersPerPage] = useState(1000);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState(1);
   const router = useRouter();
@@ -136,10 +136,6 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
     setCurrentPage(1);
   }, [searchTerm, users]);
 
-  // Calculăm utilizatorii pentru pagina curentă
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -235,16 +231,24 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
   
 
   const compatibleUsers = users
-    .filter((user) => user.responses)
-    .map((user) => ({
-      ...user,
-      compatibility: calculateCompatibility(user.responses),
-    }))
-    .filter((user) => user.compatibility !== null)
-    .sort(
-      (a, b) =>
-        b.compatibility.compatibilityScore - a.compatibility.compatibilityScore
-    );
+  .filter((user) => user.responses)
+  .map((user) => ({
+    ...user,
+    compatibility: calculateCompatibility(user.responses),
+  }))
+  .filter((user) => user.compatibility !== null)
+  .sort(
+    (a, b) =>
+      b.compatibility.compatibilityScore - a.compatibility.compatibilityScore
+  );
+
+    // Calculăm utilizatorii pentru pagina curentă
+    const totalCompatibleUsers = compatibleUsers.length;
+    const indexOfLastUser = currentPage * usersPerPage;
+    const indexOfFirstUser = indexOfLastUser - usersPerPage;
+    const currentCompatibleUsers = compatibleUsers.slice(indexOfFirstUser, indexOfLastUser);
+    
+
 
   return (
     <div className="dashboard__main">
@@ -282,8 +286,9 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
                           <tr>
                             <th>Nom d'utilisateur</th>
                             <th>{translatedTexts.genText}</th>
-                            <th>Statut</th>
+                            <th>Varsta</th>
                             <th>Compatibilitate</th>
+                            <th>Grad comp</th>
                             <th>Acțiuni</th>
                           </tr>
                         </thead>
@@ -304,7 +309,7 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
                       <div className="col-auto">
                         <Pagination
                           usersPerPage={usersPerPage}
-                          totalUsers={filteredUsers.length}
+                          totalUsers={totalCompatibleUsers}  // folosește totalCompatibleUsers
                           paginate={paginate}
                           currentPage={currentPage}
                         />

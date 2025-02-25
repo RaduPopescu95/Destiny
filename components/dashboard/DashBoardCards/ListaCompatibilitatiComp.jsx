@@ -185,6 +185,7 @@ export default function ListCompatibilitati({
     <tr>
       <td>{data.username}</td>
       <td>{data.gender ? data.gender : "N/A"}</td>
+      <td>{data.age ? data.age : "N/A"}</td>
       <td>{data.isActivated ? "Cont activ" : "Cont inactiv"}</td>
       <td>{compatibility}%</td>
       <td style={{ display: "flex", gap: "10px" }}>

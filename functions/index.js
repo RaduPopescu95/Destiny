@@ -249,3 +249,120 @@ exports.sendSubscriptionEmail = functions.firestore
         return null;
       }
     });
+
+
+exports.sendMissingResponsesReminder = functions.pubsub
+    .schedule("0 9 * * *") // Se execută zilnic la ora 9:00 AM
+    .onRun(async (context) => {
+      try {
+        const usersSnapshot = await db.collection("Users").get();
+
+        // Parcurgem fiecare utilizator
+        usersSnapshot.forEach(async (userDoc) => {
+          const userData = userDoc.data();
+
+          if (!userData.responses) {
+            const email = userData.email;
+            const username = userData.username;
+            const targetLanguage = userData.targetLanguage || "ro";
+
+            let emailSubject = "";
+            let emailMessage = "";
+
+            if (targetLanguage === "en") {
+              emailSubject = "Complete Your Compatibility Quiz";
+              emailMessage =
+                `[EN]\nHello ${username},\n\n` +
+                `It seems you haven't completed your compatibility quiz yet. ` +
+                `Please log in and fill out the quiz here: https://www.ydestiny.com/ro/quiz\n\n` +
+                `Best regards,\nThe Destiny Team`;
+            } else {
+              emailSubject = "Completează chestionarul de compatibilitate";
+              emailMessage =
+                `[RO]\nSalut ${username},\n\n` +
+                `Observăm că nu ai completat chestionarul ` +
+                `de compatibilitate. ` +
+                `Te rugăm să te loghezi și să îl completezi accesând: https://www.ydestiny.com/ro/quiz\n\n` +
+                `--------------------------------------------------\n\n` +
+                `[EN]\nHello ${username},\n\n` +
+                `It seems you haven't completed your compatibility quiz yet. ` +
+                `Please log in and fill out the quiz here: https://www.ydestiny.com/ro/quiz\n\n` +
+                `Best regards,\nThe Destiny Team`;
+            }
+
+            const mailOptions = {
+              from: "webdynamicx@gmail.com",
+              to: email,
+              subject: emailSubject,
+              text: emailMessage,
+            };
+
+            try {
+              await transporter.sendMail(mailOptions);
+              console.log(`Missing responses reminder sent to: ${email}`);
+            } catch (error) {
+              console.error("Error sending quiz reminder to", email, error);
+            }
+          }
+        });
+      } catch (error) {
+        console.error("Error querying users for missing responses:", error);
+      }
+      return null;
+    });
+
+
+exports.sendNewCompatibilityEmail = functions.firestore
+    .document("Users/{userId}/Compatibilitati/{compatId}")
+    .onCreate(async (snap, context) => {
+      const userId = context.params.userId;
+
+      try {
+        const userDoc = await db.collection("Users").doc(userId).get();
+        if (!userDoc.exists) {
+          console.error("User document does not exist for userId", userId);
+          return null;
+        }
+        const userData = userDoc.data();
+        const email = userData.email;
+        const username = userData.username;
+        const targetLanguage = userData.targetLanguage || "ro";
+
+        let emailSubject = "";
+        let emailMessage = "";
+
+        if (targetLanguage === "en") {
+          emailSubject = "You Have a New Compatibility";
+          emailMessage =
+            `[EN]\nHello ${username},\n\n` +
+            `You have a new compatibility match on Destiny! ` +
+            `Please log in to view your new match and details.\n\n` +
+            `Best regards,\nThe Destiny Team`;
+        } else {
+          emailSubject = "Ai o nouă compatibilitate";
+          emailMessage =
+            `[RO]\nSalut ${username},\n\n` +
+            `Ai primit o nouă compatibilitate pe Destiny! ` +
+            `Te rugăm să te loghezi pentru a verifica \n\n` +
+            `detaliile compatibilității.\n\n` +
+            `--------------------------------------------------\n\n` +
+            `[EN]\nHello ${username},\n\n` +
+            `You have a new compatibility match on Destiny! ` +
+            `Please log in to view your new match and details.\n\n` +
+            `Best regards,\nThe Destiny Team`;
+        }
+
+        const mailOptions = {
+          from: "webdynamicx@gmail.com",
+          to: email,
+          subject: emailSubject,
+          text: emailMessage,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`New compatibility email sent to ${email}`);
+      } catch (error) {
+        console.error("Error sending new comp email for user", userId, error);
+      }
+      return null;
+    });
