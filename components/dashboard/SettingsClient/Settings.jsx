@@ -39,7 +39,7 @@ export default function Settings({
     editProfileText,
     passwordText,
     closeAccountText,
-    translatedTexts.activeSubText,
+    // translatedTexts.activeSubText,
   ]; // folosește traducerile primite ca props
 
   if (loading) {
@@ -103,10 +103,10 @@ export default function Settings({
                     activeTab={activeTab}
                     translatedTexts={translatedTexts}
                   />
-                  <SubscriptionsProfile
+                  {/* <SubscriptionsProfile
                     activeTab={activeTab}
                     translatedTexts={translatedTexts}
-                  />
+                  /> */}
                   {/* <Notification activeTab={activeTab} /> */}
                 </div>
               </div>

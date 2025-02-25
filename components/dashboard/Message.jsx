@@ -1,269 +1,30 @@
 "use client";
-
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import FooterNine from "../layout/footers/FooterNine";
 import Image from "next/image";
-import { useAuth } from "@/context/AuthContext";
-import { db } from "@/firebase";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  addDoc,
-  onSnapshot,
-  where,
-  updateDoc,
-  setDoc,
-} from "firebase/firestore";
-import { query } from "firebase/database";
-import TypingAnimation from "./TypingAnimation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserCircle } from "@fortawesome/free-solid-svg-icons";
-import { useRouter } from "next/navigation";
+import TypingAnimation from "./TypingAnimation";
+import { useMessageLogic } from "@/hooks/useMessageLogic";
 
 export default function Message() {
-  const { userData } = useAuth();
-  const [compatibleUsers, setCompatibleUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [unseenMessages, setUnseenMessages] = useState({});
-  const router = useRouter()
-  let isSubscribed =
-  userData?.subscriptionActive ||
-  userData?.subscriptionStatus === "canceledUntilEnd";
-  isSubscribed = true
-  let allowedConversation =
-  !isSubscribed && compatibleUsers.length > 0 ? compatibleUsers[0] : null;
-allowedConversation = true
-
-
-  // Referință pentru containerul de mesaje
-  const messagesEndRef = useRef(null);
-
-  // Funcție pentru scroll la ultimul mesaj
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Fetch compatible users and count unseen messages
-  useEffect(() => {
-    const fetchCompatibleUsers = async () => {
-      if (!userData?.uid) return;
-
-      try {
-        const compatibilitatiRef = collection(
-          db,
-          "Users",
-          userData?.uid,
-          "Compatibilitati"
-        );
-        const compatibilitatiSnapshot = await getDocs(compatibilitatiRef);
-
-        const compatibleUserIds = compatibilitatiSnapshot.docs.map(
-          (doc) => doc.data().compatibleUserId
-        );
-
-        const usersWithLastMessage = await Promise.all(
-          compatibleUserIds.map(async (userId) => {
-            // Ignoră utilizatorul curent dacă apare în lista de compatibilități
-            if (userId === userData?.uid) return null;
-
-            const userDocRef = doc(db, "Users", userId);
-            const userSnapshot = await getDoc(userDocRef);
-            const userInfo = { id: userSnapshot.id, ...userSnapshot.data() };
-
-            // Sortare UID-uri pentru `chatPath`
-            const chatPath = [userId, userData?.uid].sort().join("-");
-            const messagesQuery = query(
-              collection(db, "Chats", chatPath, "Messages")
-            );
-
-            const messagesSnapshot = await getDocs(messagesQuery);
-        
-
-            // Găsește ultimul mesaj
-            const lastMessage = messagesSnapshot.docs
-              .map((doc) => ({ id: doc.id, ...doc.data() }))
-              .sort((a, b) => b.timestamp?.toDate() - a.timestamp?.toDate())[0];
-            const mainImage = userInfo?.images?.[0]?.fileUri 
-
-            if (messagesSnapshot.empty) {
-              console.log(`No messages found for chat: ${chatPath}`);
-              return { ...userInfo, mainImage, lastMessageTimestamp: null };
-            }
-            // const mainImage =
-            //   userInfo?.images?.find((image) => image.isMain)?.fileUri ||
-            //   userInfo?.images?.[0]?.fileUri ||
-            //   "/default-avatar.png";
-            console.log("main image.....", mainImage)
-            return {
-              ...userInfo,
-              mainImage,
-              lastMessageTimestamp: lastMessage?.timestamp?.toDate() || null,
-            };
-          })
-        );
-
-        // Sortează utilizatorii
-        const sortedUsers = usersWithLastMessage
-          .filter(Boolean) // Elimină utilizatorii invalizi (ex. null)
-          .sort((a, b) => {
-            if (a.lastMessageTimestamp && b.lastMessageTimestamp) {
-              return b.lastMessageTimestamp - a.lastMessageTimestamp;
-            }
-            if (a.lastMessageTimestamp) return -1;
-            if (b.lastMessageTimestamp) return 1;
-            return 0;
-          });
-        console.log("sortedUsers...", sortedUsers);
-        setCompatibleUsers(sortedUsers);
-      } catch (error) {
-        console.error("Error fetching compatible users:", error);
-      }
-    };
-
-    fetchCompatibleUsers();
-  }, [userData?.uid]);
-
-  // Scroll la ultimul mesaj atunci când lista de mesaje se schimbă
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Real-time listener for messages between user and selected user
-  useEffect(() => {
-    if (!selectedUser) return;
-
-      // Dacă utilizatorul nu este abonat și conversația selectată nu este cea permisă, redirecționează:
-  if (!isSubscribed && allowedConversation && selectedUser.id !== allowedConversation.id) {
-    router.push("/subscriptions");
-    return;
-  }
-
-    const chatRef = collection(
-      db,
-      "Chats",
-      `${userData?.uid}-${selectedUser.id}`,
-      "Messages"
-    );
-
-    const unsubscribe = onSnapshot(chatRef, (snapshot) => {
-      const fetchedMessages = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .sort((a, b) => a.timestamp?.toDate() - b.timestamp?.toDate());
-
-      setMessages(fetchedMessages);
-    });
-
-    return () => unsubscribe();
-  }, [selectedUser, userData?.uid]);
-
-  // Function to handle sending messages
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedUser) return;
-
-      // Verificare pentru utilizatorii neabonați
-  if (!isSubscribed && allowedConversation && selectedUser.id !== allowedConversation.id) {
-    router.push("/subscriptions");
-    return;
-  }
-
-    const messageData = {
-      senderId: userData?.uid,
-      receiverId: selectedUser.id,
-      content: newMessage,
-      timestamp: new Date(),
-      seen: false,
-    };
-
-    await addDoc(
-      collection(
-        db,
-        "Chats",
-        `${userData?.uid}-${selectedUser.id}`,
-        "Messages"
-      ),
-      messageData
-    );
-    await addDoc(
-      collection(
-        db,
-        "Chats",
-        `${selectedUser.id}-${userData?.uid}`,
-        "Messages"
-      ),
-      messageData
-    );
-
-    setNewMessage("");
-  };
-
-  // Handle sending message on Enter key press
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && e.ctrlKey) {
-      // Adaugă un nou rând
-      setNewMessage((prev) => prev + "\n");
-    } else if (e.key === "Enter") {
-      // Trimite mesajul
-      e.preventDefault(); // Previne adăugarea unui nou rând în textarea
-      handleSendMessage();
-    }
-  };
-
-  const [isTyping, setIsTyping] = useState(false);
-
-  useEffect(() => {
-    if (!selectedUser) return;
-
-    const typingRef = doc(
-      db,
-      "Chats",
-      `${userData?.uid}-${selectedUser.id}`,
-      "Typing",
-      "State"
-    );
-
-    console.log("Listening to typing updates for:", typingRef.path);
-
-    const unsubscribe = onSnapshot(typingRef, (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        console.log("Typing document data:", docSnapshot.data());
-        setIsTyping(docSnapshot.data()?.isTyping || false);
-      } else {
-        console.log("Typing document does not exist at:", typingRef.path);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [selectedUser, userData?.uid]);
-
-  const handleTyping = async () => {
-    if (!selectedUser) return;
-
-    const typingRef = doc(
-      db,
-      "Chats",
-      `${selectedUser.id}-${userData?.uid}`, // Asigură-te că ordinea este corectă
-      "Typing",
-      "State"
-    );
-
-    try {
-      console.log("Setting typing state to true at:", typingRef.path);
-      await setDoc(typingRef, { isTyping: true }, { merge: true }); // Creează documentul dacă nu există
-      console.log("Typing state set to true successfully");
-
-      setTimeout(async () => {
-        console.log("Resetting typing state to false at:", typingRef.path);
-        await setDoc(typingRef, { isTyping: false }, { merge: true });
-        console.log("Typing state reset to false successfully");
-      }, 3000);
-    } catch (error) {
-      console.error("Error in handleTyping:", error);
-    }
-  };
+  const {
+    compatibleUsers,
+    selectedUser,
+    setSelectedUser,
+    messages,
+    newMessage,
+    setNewMessage,
+    unseenMessages,
+    messagesEndRef,
+    handleSendMessage,
+    handleKeyDown,
+    isTyping,
+    handleTyping,
+    isSubscribed,
+    allowedConversation,
+    userData
+  } = useMessageLogic();
 
   return (
     <div className="dashboard__main">
@@ -287,8 +48,14 @@ allowedConversation = true
                     <div
                       key={user.id}
                       onClick={() => setSelectedUser(user)}
-                      className={`d-flex justify-between cursor-pointer ${selectedUser?.id === user.id ? "bg-light-5" : ""} ${
-                        !isSubscribed && allowedConversation && user.id !== allowedConversation.id ? "blurred" : ""
+                      className={`d-flex justify-between cursor-pointer ${
+                        selectedUser?.id === user.id ? "bg-light-5" : ""
+                      } ${
+                        !isSubscribed &&
+                        allowedConversation &&
+                        user.id !== allowedConversation.id
+                          ? "blurred"
+                          : ""
                       }`}
                     >
                       <div className="d-flex items-center">
@@ -297,11 +64,11 @@ allowedConversation = true
                             <Image
                               width={50}
                               height={50}
-                              src={user.mainImage }
+                              src={user.mainImage}
                               alt="image"
                               className="size-50"
                               style={{
-                                borderRadius: "25%", // Imaginea rotundă
+                                borderRadius: "25%",
                                 objectFit: "cover",
                               }}
                             />
@@ -344,16 +111,6 @@ allowedConversation = true
                           {unseenMessages[user.id]}
                         </div>
                       )}
-
-                      {/* <div className="d-flex items-end flex-column pt-8">
-                        {unseenMessages[user.id] > 0 && (
-                          <div className="d-flex justify-center items-center size-20 bg-green-5 rounded-full mt-8">
-                            <span className="text-11 lh-1 text-white fw-500">
-                              {unseenMessages[user.id]}
-                            </span>
-                          </div>
-                        )}
-                      </div> */}
                     </div>
                   ))}
                 </div>
@@ -371,11 +128,11 @@ allowedConversation = true
                         <Image
                           width={50}
                           height={50}
-                          src={selectedUser?.mainImage }
+                          src={selectedUser?.mainImage}
                           alt="image"
                           className="size-50"
                           style={{
-                            borderRadius: "25%", // Imaginea rotundă
+                            borderRadius: "25%",
                             objectFit: "cover",
                           }}
                         />
@@ -398,10 +155,7 @@ allowedConversation = true
                       {/* <div className="text-14 lh-11 mt-5">Active</div> */}
                     </div>
                   </div>
-                  {/* <a
-                    href="#"
-                    className="text-14 lh-11 fw-500 text-orange-1 underline"
-                  >
+                  {/* <a href="#" className="text-14 lh-11 fw-500 text-orange-1 underline">
                     Delete Conversation
                   </a> */}
                 </div>
@@ -418,130 +172,117 @@ allowedConversation = true
                 </div>
               )}
 
-              {/* Container with fixed height and scroll for messages */}
               <div
-  className="messages-container py-40 px-40"
-  style={{ height: "400px", overflowY: "auto", position: "relative" }}
->
-  <div className="row y-gap-20">
-    {messages.map((msg) => (
-      <div
-        key={msg?.id}
-        className={`col-xl-7 col-lg-10 ${
-          msg?.senderId === userData?.uid
-            ? "offset-xl-5 offset-lg-2 text-right"
-            : ""
-        }`}
-      >
-        <div
-          className={`d-flex items-center ${
-            msg?.senderId === userData?.uid ? "justify-end" : ""
-          }`}
-        >
-          {msg?.senderId !== userData?.uid && (
-            <div className="shrink-0">
-              {selectedUser?.mainImage ? (
-                <Image
-                  width={50}
-                  height={50}
-                  src={selectedUser?.mainImage }
-                  alt="Avatar"
-                  className="size-50"
-                  style={{
-                    borderRadius: "25%", // Imaginea rotundă
-                    objectFit: "cover",
-                  }}
-                />
-              ) : (
-                <FontAwesomeIcon
-                  icon={faUserCircle}
-                  size="2x"
-                  className="text-muted"
-                  style={{ width: "50px", height: "50px" }}
-                />
-              )}
-            </div>
-          )}
-          <div className="lh-11 fw-500 text-dark-1 ml-10">
-            {msg?.senderId === userData?.uid
-              ? "You"
-              : selectedUser?.username}
-          </div>
-          <div className="text-14 lh-11 ml-10">
-            {msg?.timestamp instanceof Date
-              ? `${msg.timestamp.toLocaleDateString()} ${msg.timestamp.toLocaleTimeString(
-                  [],
-                  { hour: "2-digit", minute: "2-digit" }
-                )}`
-              : msg?.timestamp?.toDate()?.toLocaleDateString() +
-                " " +
-                msg?.timestamp?.toDate()?.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-          </div>
-        </div>
-        <div className="d-inline-block mt-15">
-          <div
-            className={`py-20 px-30 rounded-8 message-content ${
-              msg?.senderId === userData?.uid
-                ? "bg-light-7 -dark-bg-dark-2 text-purple-1 text-right"
-                : "bg-light-3"
-            }`}
-            style={{
-              whiteSpace: "pre-wrap",
-              wordWrap: "break-word",
-            }}
-          >
-            {msg?.content}
-          </div>
-        </div>
-      </div>
-    ))}
+                className="messages-container py-40 px-40"
+                style={{ height: "400px", overflowY: "auto", position: "relative" }}
+              >
+                <div className="row y-gap-20">
+                  {messages.map((msg) => (
+                    <div
+                      key={msg?.id}
+                      className={`col-xl-7 col-lg-10 ${
+                        msg?.senderId === userData?.uid
+                          ? "offset-xl-5 offset-lg-2 text-right"
+                          : ""
+                      }`}
+                    >
+                      <div
+                        className={`d-flex items-center ${
+                          msg?.senderId === userData?.uid ? "justify-end" : ""
+                        }`}
+                      >
+                        {msg?.senderId !== userData?.uid && (
+                          <div className="shrink-0">
+                            {selectedUser?.mainImage ? (
+                              <Image
+                                width={50}
+                                height={50}
+                                src={selectedUser?.mainImage}
+                                alt="Avatar"
+                                className="size-50"
+                                style={{
+                                  borderRadius: "25%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            ) : (
+                              <FontAwesomeIcon
+                                icon={faUserCircle}
+                                size="2x"
+                                className="text-muted"
+                                style={{ width: "50px", height: "50px" }}
+                              />
+                            )}
+                          </div>
+                        )}
+                        <div className="lh-11 fw-500 text-dark-1 ml-10">
+                          {msg?.senderId === userData?.uid ? "You" : selectedUser?.username}
+                        </div>
+                        <div className="text-14 lh-11 ml-10">
+                          {msg?.timestamp instanceof Date
+                            ? `${msg.timestamp.toLocaleDateString()} ${msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                            : msg?.timestamp?.toDate()?.toLocaleDateString() +
+                              " " +
+                              msg?.timestamp?.toDate()?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </div>
+                      <div className="d-inline-block mt-15">
+                        <div
+                          className={`py-20 px-30 rounded-8 message-content ${
+                            msg?.senderId === userData?.uid
+                              ? "bg-light-7 -dark-bg-dark-2 text-purple-1 text-right"
+                              : "bg-light-3"
+                          }`}
+                          style={{
+                            whiteSpace: "pre-wrap",
+                            wordWrap: "break-word",
+                          }}
+                        >
+                          {msg?.content}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
 
-    {/* Secțiune "is typing" */}
-    {isTyping && (
-      <div
-        className="d-flex align-items-center mt-10"
-        style={{ marginLeft: "10px", gap: "10px" }}
-      >
-        {selectedUser?.mainImage ? (
-          <Image
-            src={selectedUser?.mainImage }
-            alt="Typing User"
-            width={50}
-            height={50}
-            style={{ borderRadius: "25%", objectFit: "cover" }}
-          />
-        ) : (
-          <FontAwesomeIcon
-            icon={faUserCircle}
-            size="2x"
-            className="text-muted"
-            style={{ width: "50px", height: "50px" }}
-          />
-        )}
-        <div>
-          <TypingAnimation />
-        </div>
-      </div>
-    )}
+                  {isTyping && (
+                    <div
+                      className="d-flex align-items-center mt-10"
+                      style={{ marginLeft: "10px", gap: "10px" }}
+                    >
+                      {selectedUser?.mainImage ? (
+                        <Image
+                          src={selectedUser?.mainImage}
+                          alt="Typing User"
+                          width={50}
+                          height={50}
+                          style={{ borderRadius: "25%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faUserCircle}
+                          size="2x"
+                          className="text-muted"
+                          style={{ width: "50px", height: "50px" }}
+                        />
+                      )}
+                      <div>
+                        <TypingAnimation />
+                      </div>
+                    </div>
+                  )}
 
-    {/* Div pentru scroll automat */}
-    <div ref={messagesEndRef}></div>
-  </div>
+                  <div ref={messagesEndRef}></div>
+                </div>
 
-  {/* Overlay pentru conversație nepermisă (non-abonat) */}
-  {selectedUser &&
-    !isSubscribed &&
-    allowedConversation &&
-    selectedUser.id !== allowedConversation.id && (
-      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-lg font-bold">
-        Upgrade pentru acces complet
-      </div>
-    )}
-</div>
-
+                {selectedUser &&
+                  !isSubscribed &&
+                  allowedConversation &&
+                  selectedUser.id !== allowedConversation.id && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-lg font-bold">
+                      Upgrade pentru acces complet
+                    </div>
+                  )}
+              </div>
 
               <div className="py-25 px-40 border-top-light">
                 <div className="row y-gap-10 justify-between">
