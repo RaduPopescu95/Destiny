@@ -1,7 +1,6 @@
 "use client";
 
 import "../public/assets/sass/styles.scss";
-
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import "react-calendar/dist/Calendar.css";
@@ -15,12 +14,15 @@ import { AuthProvider } from "@/context/AuthContext";
 
 import Cookies from "js-cookie";
 import { GoogleTagManager } from "@next/third-parties/google";
+import LanguageModal from "@/components/common/LanguageModal";
+
+// Importă componenta noastră
+
 
 export default function RootLayout({ children }) {
-  const [lang, setLang] = useState("fr"); // Setăm limba implicită la "fr"
+  const [lang, setLang] = useState("fr");
 
   useEffect(() => {
-    // Inițializăm AOS pentru animații
     AOS.init({
       duration: 700,
       offset: 120,
@@ -28,20 +30,23 @@ export default function RootLayout({ children }) {
       once: true,
     });
 
-    // Obținem limba din cookie sau folosim limba implicită "fr"
+    // Verificăm limba salvată sau folosim "fr"
     const savedLocale = Cookies.get("NEXT_LOCALE") || "fr";
-    setLang(savedLocale); // Setăm limba pe baza valorii din cookie
+    setLang(savedLocale);
   }, []);
 
   return (
-    <html lang={lang} className="">
+    <html lang={lang}>
       <GoogleTagManager gtmId="G-RZ4DR59LZ5" />
       <head></head>
       <body>
         <Context>
-      
-          <AuthProvider>{children}</AuthProvider>
-       
+          <AuthProvider>
+            {children}
+
+            {/* Afișăm modalul global, care apare la prima accesare */}
+            <LanguageModal />
+          </AuthProvider>
         </Context>
       </body>
     </html>

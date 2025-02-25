@@ -15,7 +15,7 @@ export function middleware(req) {
 
   // Verificăm dacă există parametrul "lang" în query string
   const langParam = searchParams.get("lang");
-  let locale = langParam || req.cookies.get("NEXT_LOCALE")?.value || "fr";
+  let locale = langParam || req.cookies.get("NEXT_LOCALE")?.value || "ro";
 
   const url = req.nextUrl.clone();
 
