@@ -11,6 +11,7 @@ import {
   addDoc,
   onSnapshot,
   setDoc,
+  updateDoc, // import pentru actualizarea documentelor
 } from "firebase/firestore";
 import { query } from "firebase/database";
 
@@ -24,6 +25,7 @@ export function useMessageLogic() {
   const [newMessage, setNewMessage] = useState("");
   const [unseenMessages, setUnseenMessages] = useState({});
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedUserOnline, setSelectedUserOnline] = useState(false);
 
   let isSubscribed =
     userData?.subscriptionActive ||
@@ -42,6 +44,21 @@ export function useMessageLogic() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // ACTUALIZEAZĂ ONLINE SAU OFFLINE
+  useEffect(() => {
+    if (!userData?.uid) return;
+    const userDocRef = doc(db, "Users", userData.uid);
+    // La montare, setează online = true
+    setDoc(userDocRef, { isOnline: true }, { merge: true })
+      .catch((err) => console.error("Error setting online status:", err));
+    
+    // La demontare, setează online = false
+    return () => {
+      setDoc(userDocRef, { isOnline: false }, { merge: true })
+        .catch((err) => console.error("Error resetting online status:", err));
+    };
+  }, [userData?.uid]);
+  
   // Fetch compatible users and last message
   useEffect(() => {
     const fetchCompatibleUsers = async () => {
@@ -145,8 +162,9 @@ export function useMessageLogic() {
       receiverId: selectedUser.id,
       content: newMessage,
       timestamp: new Date(),
-      seen: false,
+      status: "sent", // Status inițial
     };
+    // Adăugăm mesajul în ambele locații
     await addDoc(
       collection(db, "Chats", `${userData.uid}-${selectedUser.id}`, "Messages"),
       messageData
@@ -219,6 +237,55 @@ export function useMessageLogic() {
     }
   };
 
+  // Listen for online status of selectedUser
+  useEffect(() => {
+    if (!selectedUser) return;
+    const userDocRef = doc(db, "Users", selectedUser.id);
+    const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        console.log("User document data:", data); // Debug: afișează toate datele din document
+        const online = data.isOnline;
+        console.log("Online status received:", online); // Debug: afișează statusul online
+        setSelectedUserOnline(online || false);
+      } else {
+        console.log("Documentul pentru utilizatorul selectat nu există.");
+      }
+    });
+    return () => unsubscribe();
+  }, [selectedUser]);
+
+  // Actualizează statusul mesajelor la "seen" pentru toate mesajele (inclusiv cele trimise)
+  useEffect(() => {
+    if (!selectedUser || !userData?.uid) return;
+  
+    messages.forEach((msg) => {
+      // Marcam ca "seen" doar mesajele primite de la alt utilizator (nu ale tale)
+      if (msg.senderId !== userData.uid && msg.status !== "seen") {
+        const chatPath1 = `${userData.uid}-${selectedUser.id}`;
+        const chatPath2 = `${selectedUser.id}-${userData.uid}`;
+        const msgRef1 = doc(db, "Chats", chatPath1, "Messages", msg.id);
+        const msgRef2 = doc(db, "Chats", chatPath2, "Messages", msg.id);
+  
+        updateDoc(msgRef1, { status: "seen" })
+          .then(() =>
+            console.log("Message status updated to seen in chatPath1")
+          )
+          .catch((err) =>
+            console.error("Error updating message status in chatPath1:", err)
+          );
+  
+        updateDoc(msgRef2, { status: "seen" })
+          .then(() =>
+            console.log("Message status updated to seen in chatPath2")
+          )
+          .catch((err) =>
+            console.error("Error updating message status in chatPath2:", err)
+          );
+      }
+    });
+  }, [messages, selectedUser, userData?.uid]);
+  
   return {
     compatibleUsers,
     selectedUser,
@@ -235,5 +302,6 @@ export function useMessageLogic() {
     isSubscribed,
     allowedConversation,
     userData, // adăugăm userData aici
+    selectedUserOnline, // online status indicator
   };
 }

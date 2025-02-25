@@ -16313,3 +16313,19 @@ table.table td {
 .blurred {
   filter: blur(5px);
 }
+
+
+/* message status */
+
+.status-sent {
+  color: gray;
+}
+
+.status-delivered {
+  color: blue;
+}
+
+.status-seen {
+  color: green;
+  font-weight: bold;
+}

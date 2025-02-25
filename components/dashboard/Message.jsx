@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserCircle } from "@fortawesome/free-solid-svg-icons";
 import TypingAnimation from "./TypingAnimation";
 import { useMessageLogic } from "@/hooks/useMessageLogic";
+import { useRouter } from "next/navigation";
+import MessageStatus from "./Chat/MessageStatus";
 
 export default function Message() {
   const {
@@ -23,8 +25,19 @@ export default function Message() {
     handleTyping,
     isSubscribed,
     allowedConversation,
-    userData
+    userData,
+    selectedUserOnline,
   } = useMessageLogic();
+
+  const router = useRouter();
+
+  // Handler pentru click pe iconiță
+  const handleIconClick = () => {
+    if (selectedUser && userData) {
+      const chatId = [selectedUser.id, userData.uid].sort().join("-");
+      router.push(`/client-compatibil?uid=${selectedUser.id}&cid=${chatId}`);
+    }
+  };
 
   return (
     <div className="dashboard__main">
@@ -123,7 +136,13 @@ export default function Message() {
               {selectedUser ? (
                 <div className="d-flex items-center justify-between py-20 px-30 border-bottom-light">
                   <div className="d-flex items-center">
-                    <div className="shrink-0">
+                    {/* Iconița devine clickabilă */}
+                    <div
+                      className="shrink-0"
+                      onClick={handleIconClick}
+                      style={{ cursor: "pointer" }}
+                      title="Vezi detalii client"
+                    >
                       {selectedUser?.mainImage ? (
                         <Image
                           width={50}
@@ -149,13 +168,26 @@ export default function Message() {
                       )}
                     </div>
                     <div className="ml-10">
-                      <div className="lh-11 fw-500 text-dark-1">
-                        {selectedUser ? selectedUser.username : "Select a user"}
-                      </div>
-                      {/* <div className="text-14 lh-11 mt-5">Active</div> */}
-                    </div>
+  <div className="lh-11 fw-500 text-dark-1">
+    {selectedUser ? selectedUser.username : "Select a user"}
+    {selectedUserOnline ? (
+      <span className="ml-2 inline-block text-green-1" title="Online">
+       {" "}(Online)
+      </span>
+    ) : (
+      <span className="ml-2 inline-block text-dark-1" title="Offline">
+        {" "}(Offline)
+      </span>
+    )}
+  </div>
+  {/* <div className="text-14 lh-11 mt-5">Active</div> */}
+</div>
+
                   </div>
-                  {/* <a href="#" className="text-14 lh-11 fw-500 text-orange-1 underline">
+                  {/* <a
+                    href="#"
+                    className="text-14 lh-11 fw-500 text-orange-1 underline"
+                  >
                     Delete Conversation
                   </a> */}
                 </div>
@@ -215,15 +247,24 @@ export default function Message() {
                             )}
                           </div>
                         )}
+                            {/* {msg?.senderId === userData?.uid && (
+                            <MessageStatus status={msg.status} />
+                        )} */}
                         <div className="lh-11 fw-500 text-dark-1 ml-10">
                           {msg?.senderId === userData?.uid ? "You" : selectedUser?.username}
                         </div>
                         <div className="text-14 lh-11 ml-10">
                           {msg?.timestamp instanceof Date
-                            ? `${msg.timestamp.toLocaleDateString()} ${msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                            ? `${msg.timestamp.toLocaleDateString()} ${msg.timestamp.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}`
                             : msg?.timestamp?.toDate()?.toLocaleDateString() +
                               " " +
-                              msg?.timestamp?.toDate()?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              msg?.timestamp?.toDate()?.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                         </div>
                       </div>
                       <div className="d-inline-block mt-15">
@@ -240,6 +281,7 @@ export default function Message() {
                         >
                           {msg?.content}
                         </div>
+                    
                       </div>
                     </div>
                   ))}
@@ -299,13 +341,13 @@ export default function Message() {
                         handleTyping(); // Apelează funcția de tastare
                       }}
                       style={{
-                        resize: "none", // Dezactivează redimensionarea manuală
-                        maxHeight: "100px", // Înălțime fixă
-                        width: "100%", // Lățime fixă sau proporțională
-                        boxSizing: "border-box", // Include padding în dimensiuni
-                        border: "1px solid #ccc", // Linie de contur
-                        padding: "10px", // Spațiu interior
-                        overflowY: "auto", // Scroll vertical dacă textul depășește înălțimea
+                        resize: "none",
+                        maxHeight: "100px",
+                        width: "100%",
+                        boxSizing: "border-box",
+                        border: "1px solid #ccc",
+                        padding: "10px",
+                        overflowY: "auto",
                       }}
                     />
                   </div>
