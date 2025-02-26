@@ -1,5 +1,5 @@
 import Brands from "@/components/common/Brands";
-import Calendar from "@/components/common/Calendar";
+
 
 import PageLinks from "@/components/common/PageLinks";
 import PaymentSuccessPage from "@/components/common/PlataFinalizata";
@@ -87,10 +87,10 @@ export default async function page({ params }) {
       />
       <div className="content-wrapper js-content-wrapper overflow-hidden">
         <PageLinks translatedLinks={translatedLinks} link2={"booking"} />
-        <Calendar
+        {/* <Calendar
           targetLanguage={targetLanguage}
           translatedLinks={translatedLinks}
-        />
+        /> */}
         {/* <Brands/> */}
         {/* <FooterOne/> */}
       </div>
