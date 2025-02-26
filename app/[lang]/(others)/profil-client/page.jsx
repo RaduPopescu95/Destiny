@@ -276,6 +276,15 @@ export default async function page({ params }) {
     quizText: await fetchTranslation("Quiz", targetLanguage),
     downloadQuizText: await fetchTranslation("Download quiz", targetLanguage),
     retakeQuizText: await fetchTranslation("Retake quiz", targetLanguage),
+    confidentialitateText: await fetchTranslation("Confidentialitate", targetLanguage),
+   // *** Cheile pentru PrivacySettings ***
+   privacySettingsTitle: await fetchTranslation("Setări de confidențialitate", targetLanguage),
+   displayAge: await fetchTranslation("Afișare vârstă", targetLanguage),
+   emailCompatibility: await fetchTranslation("Notificări email privind compatibilități", targetLanguage),
+   emailPromotions: await fetchTranslation("Notificări email privind promoții", targetLanguage),
+   settingsUpdated: await fetchTranslation("Setările au fost actualizate cu succes!", targetLanguage),
+   settingsUpdateError: await fetchTranslation("A apărut o eroare la actualizare.", targetLanguage),
+   saveSettings: await fetchTranslation("Salvează setările", targetLanguage),
   };
 
   return (

@@ -13,15 +13,15 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-// Configurații pentru Nodemailer cu contul de email de pe cPanel
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "mail.privateemail.com",
+  port: 465, // sau 587  TLS
+  secure: true, // true portul 465, false 587
   auth: {
-    user: "webdynamicx@gmail.com",
-    pass: "ypeb yvmi ygat lahn",
+    user: "contact@ydestiny.com",
+    pass: "Timewatch132021!",
   },
 });
-
 
 // Funcția periodică pentru actualizarea abonamentelor utilizatorilor
 exports.updateUserSubscriptions = functions.pubsub
@@ -116,7 +116,7 @@ exports.sendWelcomeEmail = functions.firestore
       }
 
       const mailOptions = {
-        from: "webdynamicx@gmail.com",
+        from: "contact@ydestiny.com",
         to: email,
         subject: emailSubject,
         text: emailMessage,
@@ -170,7 +170,7 @@ exports.sendActivationEmail = functions.firestore
         }
 
         const mailOptions = {
-          from: "webdynamicx@gmail.com",
+          from: "contact@ydestiny.com",
           to: email,
           subject: emailSubject,
           text: emailMessage,
@@ -230,7 +230,7 @@ exports.sendSubscriptionEmail = functions.firestore
         }
 
         const mailOptions = {
-          from: "webdynamicx@gmail.com",
+          from: "contact@ydestiny.com",
           to: email,
           subject: emailSubject,
           text: emailMessage,
@@ -251,6 +251,7 @@ exports.sendSubscriptionEmail = functions.firestore
     });
 
 
+// === SEND MISSING RESPONSES REMINDER ===
 exports.sendMissingResponsesReminder = functions.pubsub
     .schedule("0 9 * * *") // Se execută zilnic la ora 9:00 AM
     .onRun(async (context) => {
@@ -261,7 +262,18 @@ exports.sendMissingResponsesReminder = functions.pubsub
         usersSnapshot.forEach(async (userDoc) => {
           const userData = userDoc.data();
 
+          // Verificăm dacă utilizatorul nu a completat răspunsurile (responses)
           if (!userData.responses) {
+            if (
+              userData.privacySettings &&
+            userData.privacySettings.emailPromotions === false
+            ) {
+              console.log(
+                  `Skip responses reminder ${userData.email}`,
+              );
+              return;
+            }
+
             const email = userData.email;
             const username = userData.username;
             const targetLanguage = userData.targetLanguage || "ro";
@@ -272,26 +284,28 @@ exports.sendMissingResponsesReminder = functions.pubsub
             if (targetLanguage === "en") {
               emailSubject = "Complete Your Compatibility Quiz";
               emailMessage =
-                `[EN]\nHello ${username},\n\n` +
-                `It seems you haven't completed your compatibility quiz yet. ` +
-                `Please log in and fill out the quiz here: https://www.ydestiny.com/ro/quiz\n\n` +
-                `Best regards,\nThe Destiny Team`;
+              `[EN]\nHello ${username},\n\n` +
+              `It seems you haven't completed your compatibility quiz yet. ` +
+              `Please log in and fill out the quiz here: https://www.ydestiny.com/ro/quiz\n\n` +
+              `To manage your email preferences or unsubscribe, please visit: https://www.ydestiny.com/profil-client\n\n` +
+              `Best regards,\nThe Destiny Team`;
             } else {
               emailSubject = "Completează chestionarul de compatibilitate";
               emailMessage =
-                `[RO]\nSalut ${username},\n\n` +
-                `Observăm că nu ai completat chestionarul ` +
-                `de compatibilitate. ` +
-                `Te rugăm să te loghezi și să îl completezi accesând: https://www.ydestiny.com/ro/quiz\n\n` +
-                `--------------------------------------------------\n\n` +
-                `[EN]\nHello ${username},\n\n` +
-                `It seems you haven't completed your compatibility quiz yet. ` +
-                `Please log in and fill out the quiz here: https://www.ydestiny.com/ro/quiz\n\n` +
-                `Best regards,\nThe Destiny Team`;
+              `[RO]\nSalut ${username},\n\n` +
+              `Observăm că nu ai completat chestionarul de compatibilitate. ` +
+              `Te rugăm să te loghezi și să îl completezi accesând: https://www.ydestiny.com/ro/quiz\n\n` +
+              `Pentru a gestiona preferințele tale de email sau pentru a te dezabona, accesează: https://www.ydestiny.com/profil-client\n\n` +
+              `--------------------------------------------------\n\n` +
+              `[EN]\nHello ${username},\n\n` +
+              `It seems you haven't completed your compatibility quiz yet. ` +
+              `Please log in and fill out the quiz here: https://www.ydestiny.com/ro/quiz\n\n` +
+              `To manage your email preferences or unsubscribe, please visit: https://www.ydestiny.com/profil-client\n\n` +
+              `Best regards,\nThe Destiny Team`;
             }
 
             const mailOptions = {
-              from: "webdynamicx@gmail.com",
+              from: "contact@ydestiny.com",
               to: email,
               subject: emailSubject,
               text: emailMessage,
@@ -312,6 +326,7 @@ exports.sendMissingResponsesReminder = functions.pubsub
     });
 
 
+// === SEND NEW COMPATIBILITY EMAIL ===
 exports.sendNewCompatibilityEmail = functions.firestore
     .document("Users/{userId}/Compatibilitati/{compatId}")
     .onCreate(async (snap, context) => {
@@ -324,6 +339,17 @@ exports.sendNewCompatibilityEmail = functions.firestore
           return null;
         }
         const userData = userDoc.data();
+
+        if (
+          userData.privacySettings &&
+        userData.privacySettings.emailCompatibility === false
+        ) {
+          console.log(
+              `Skip new comp email ${userData.email}`,
+          );
+          return null;
+        }
+
         const email = userData.email;
         const username = userData.username;
         const targetLanguage = userData.targetLanguage || "ro";
@@ -334,26 +360,32 @@ exports.sendNewCompatibilityEmail = functions.firestore
         if (targetLanguage === "en") {
           emailSubject = "You Have a New Compatibility";
           emailMessage =
-            `[EN]\nHello ${username},\n\n` +
-            `You have a new compatibility match on Destiny! ` +
-            `Please log in to view your new match and details.\n\n` +
-            `Best regards,\nThe Destiny Team`;
+          `[EN]\nHello ${username},\n\n` +
+          `You have a new compatibility match on Destiny! ` +
+          `Please log in to view your new match and details.\n\n` +
+          `https://www.ydestiny.com/ro/login\n\n` +
+          `To manage your email preferences or unsubscribe, please visit: https://www.ydestiny.com/profil-client\n\n` +
+          `Best regards,\nThe Destiny Team`;
         } else {
           emailSubject = "Ai o nouă compatibilitate";
           emailMessage =
-            `[RO]\nSalut ${username},\n\n` +
-            `Ai primit o nouă compatibilitate pe Destiny! ` +
-            `Te rugăm să te loghezi pentru a verifica \n\n` +
-            `detaliile compatibilității.\n\n` +
-            `--------------------------------------------------\n\n` +
-            `[EN]\nHello ${username},\n\n` +
-            `You have a new compatibility match on Destiny! ` +
-            `Please log in to view your new match and details.\n\n` +
-            `Best regards,\nThe Destiny Team`;
+          `[RO]\nSalut ${username},\n\n` +
+          `Ai primit o nouă compatibilitate pe Destiny! ` +
+          `Te rugăm să te loghezi pentru a verifica` +
+          ` detaliile compatibilității.\n\n` +
+          `https://www.ydestiny.com/ro/login\n\n` +
+          `Pentru a gestiona preferințele tale de email sau pentru a te dezabona, accesează: https://www.ydestiny.com/profil-client\n\n` +
+          `--------------------------------------------------\n\n` +
+          `[EN]\nHello ${username},\n\n` +
+          `You have a new compatibility match on Destiny! ` +
+          `Please log in to view your new match and details.\n\n` +
+          `https://www.ydestiny.com/ro/login\n\n` +
+          `To manage your email preferences or unsubscribe, please visit: https://www.ydestiny.com/profil-client\n\n` +
+          `Best regards,\nThe Destiny Team`;
         }
 
         const mailOptions = {
-          from: "webdynamicx@gmail.com",
+          from: "contact@ydestiny.com",
           to: email,
           subject: emailSubject,
           text: emailMessage,
@@ -362,7 +394,7 @@ exports.sendNewCompatibilityEmail = functions.firestore
         await transporter.sendMail(mailOptions);
         console.log(`New compatibility email sent to ${email}`);
       } catch (error) {
-        console.error("Error sending new comp email for user", userId, error);
+        console.error("Error new compatibility email user", userId, error);
       }
       return null;
     });

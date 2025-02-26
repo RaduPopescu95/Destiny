@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from "uuid"; // Pentru a genera ID-uri unice pentru imag
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { QuizResultsDocument } from "../InformatiiUtilizator/QuizResultsDocument";
 import { useRouter } from "next/navigation";
+import { DotLoader } from "react-spinners";
 
 const EditProfile = ({
   activeTab,
@@ -535,7 +536,7 @@ const EditProfile = ({
                 </select>
               </div> */}
 
-              <div className="col-lg-6">
+              {/* <div className="col-lg-6">
                 <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
                   {phoneLabel} *
                 </label>
@@ -548,7 +549,7 @@ const EditProfile = ({
                     formErrors.phone ? "border-danger-red" : ""
                   }`}
                 />
-              </div>
+              </div> */}
 
               {/* <div className="col-lg-12">
                 <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
@@ -577,7 +578,8 @@ const EditProfile = ({
               <div className="col-12">
                 {isLoading ? (
                   <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
+                    {/* <span className="visually-hidden">Loading...</span> */}
+                    <DotLoader color="#c13365" size={30} />
                   </div>
                 ) : (
                   <button
@@ -594,7 +596,7 @@ const EditProfile = ({
                   {translatedTexts.quizText}
                 </label>
               </div>
-              <div className="col-lg-6">
+              {/* <div className="col-lg-6">
                 <PDFDownloadLink
                   document={
                     <QuizResultsDocument
@@ -613,7 +615,7 @@ const EditProfile = ({
                       : `${translatedTexts.downloadQuizText}`
                   }
                 </PDFDownloadLink>
-              </div>
+              </div> */}
               <div className="col-lg-6">
                 <button
                   className="button -md -purple-1 text-white"

@@ -10,6 +10,7 @@ import Notification from "./Notifications";
 import Subscriptions from "@/components/common/Subscriptions";
 import SubscriptionsProfile from "./SubscriptionsProfile";
 import { useAuth } from "@/context/AuthContext";
+import PrivacySettings from "./PrivacySettings";
 
 // Am eliminat array-ul static `buttons` și îl vom primi ca props
 export default function Settings({
@@ -40,6 +41,7 @@ export default function Settings({
     passwordText,
     closeAccountText,
     // translatedTexts.activeSubText,
+    translatedTexts.confidentialitateText,
   ]; // folosește traducerile primite ca props
 
   if (loading) {
@@ -100,6 +102,10 @@ export default function Settings({
                     translatedTexts={translatedTexts}
                   />
                   <CloseAccount
+                    activeTab={activeTab}
+                    translatedTexts={translatedTexts}
+                  />
+                     <PrivacySettings
                     activeTab={activeTab}
                     translatedTexts={translatedTexts}
                   />

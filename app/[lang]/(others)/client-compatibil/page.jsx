@@ -72,6 +72,7 @@ export default async function page({ params }) {
     ),
     userNameText: await fetchTranslation("User Name", targetLanguage),
     phoneNumberText: await fetchTranslation("Phone number", targetLanguage),
+    ageText: await fetchTranslation("Age", targetLanguage),
     emailText: await fetchTranslation("Email", targetLanguage),
     aboutMeText: await fetchTranslation("About me", targetLanguage),
     AddressText: await fetchTranslation("Address", targetLanguage),

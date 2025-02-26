@@ -230,14 +230,14 @@ export default function EditProfile({
 
           <div className="col-md-6">
             <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
-              {translatedTexts.phoneNumberText}
+              {translatedTexts.ageText}
             </label>
             <input
               readOnly
               required
               type="text"
-              placeholder="Telefon"
-              value={userData?.phone || ""}
+              placeholder={translatedTexts.ageText}
+              value={userData?.age || ""}
             />
           </div>
 
@@ -253,7 +253,7 @@ export default function EditProfile({
               value={userData?.email || ""}
             />
           </div>
-          <div className="col-md-12">
+          {/* <div className="col-md-12">
             <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
               {translatedTexts.scopText}
             </label>
@@ -272,7 +272,7 @@ export default function EditProfile({
                   : ""
               }
             />
-          </div>
+          </div> */}
 
           <div className="col-12">
             <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
@@ -286,7 +286,7 @@ export default function EditProfile({
               value={userData?.aboutMe || ""}
             ></textarea>
           </div>
-          <div className="col-12">
+          {/* <div className="col-12">
             <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
               {translatedTexts.AddressText}
             </label>
@@ -297,7 +297,7 @@ export default function EditProfile({
               rows="7"
               value={userData?.address || ""}
             ></textarea>
-          </div>
+          </div> */}
 
           {compatibilityInfo && (
   <div className="compatibility-info animated">
