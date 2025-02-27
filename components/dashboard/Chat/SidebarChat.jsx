@@ -17,11 +17,13 @@ export default function SidebarChat({
   typingStates,
 }) {
   return (
-    <div className="rounded-16 bg-white shadow-4 h-100">
+    <div className="rounded-16 bg-white shadow-4">
+    {/* <div className="rounded-16 bg-white shadow-4 h-100"> */}
       <div className="d-flex items-center py-20 px-30 border-bottom-light">
         <h2 className="text-17 lh-1 fw-500">Chats</h2>
       </div>
-      <div className="py-30 px-30">
+      {/* Modificare: setăm height fix și scroll vertical */}
+      <div className="py-30 px-30" style={{ height: "400px", overflowY: "auto" }}>
         <div className="y-gap-30">
           {compatibleUsers.map((user) => {
             // Ultimul mesaj
@@ -29,31 +31,27 @@ export default function SidebarChat({
             // Prescurtare la 30 de caractere
             let lastMsgSnippet = "";
             if (lastMsg?.content) {
-              if (lastMsg.content.length > 30) {
-                lastMsgSnippet = lastMsg.content.substring(0, 30) + "...";
-              } else {
-                lastMsgSnippet = lastMsg.content;
-              }
+              lastMsgSnippet =
+                lastMsg.content.length > 30
+                  ? lastMsg.content.substring(0, 30) + "..."
+                  : lastMsg.content;
             }
 
             // Afișare icon "seen" / "sent" doar dacă ultimul mesaj e al meu
             let lastMsgIcon = null;
             if (lastMsg && lastMsg.senderId === userData?.uid) {
-              if (lastMsg.status === "seen") {
-                lastMsgIcon = (
+              lastMsgIcon =
+                lastMsg.status === "seen" ? (
                   <FaCheckDouble
                     title="Seen"
                     style={{ color: "blue", marginLeft: 8 }}
                   />
-                );
-              } else {
-                lastMsgIcon = (
+                ) : (
                   <FaCheckCircle
                     title="Sent"
                     style={{ color: "gray", marginLeft: 8 }}
                   />
                 );
-              }
             }
 
             // Indicator "Typing..." dacă userul tastează (typingStates = { [userId]: bool })

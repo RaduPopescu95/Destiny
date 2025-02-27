@@ -1,10 +1,12 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserCircle } from "@fortawesome/free-solid-svg-icons";
 import { FaCheckCircle, FaCheckDouble } from "react-icons/fa";
 import TypingAnimation from "../TypingAnimation";
+import EmojiPickerDesktop from "./EmojiPickerDesktop"; // Importăm componenta emoji
 
 /**
  * Componenta care afișează conversația curentă și permite trimiterea de mesaje.
@@ -24,41 +26,52 @@ export default function ConversationChat({
   isSubscribed,
   allowedConversation,
 }) {
+  // Stare pentru afișarea selectorului de emoji-uri
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // Funcția care adaugă emoji-ul selectat la mesajul curent
+  const onEmojiClick = (emojiData, event) => {
+    setNewMessage((prev) => prev + emojiData.emoji);
+  };
+
   return (
-    <div className="rounded-16 bg-white shadow-4 h-100">
+    <div className="rounded-16 bg-white shadow-4 h-100" style={{ position: "relative" }}>
       {/* Header - user selectat */}
       {selectedUser ? (
         <div className="d-flex items-center justify-between py-20 px-30 border-bottom-light">
           <div className="d-flex items-center">
-            <div
-              className="shrink-0"
-              style={{ cursor: "pointer" }}
-              title="Vezi detalii client"
-            >
-              {selectedUser?.mainImage ? (
-                <Image
-                  width={50}
-                  height={50}
-                  src={selectedUser?.mainImage}
-                  alt="image"
-                  className="size-50"
-                  style={{
-                    borderRadius: "25%",
-                    objectFit: "cover",
-                  }}
-                />
-              ) : (
-                <FontAwesomeIcon
-                  icon={faUserCircle}
-                  size="2x"
-                  className="text-muted"
-                  style={{
-                    width: "50px",
-                    height: "50px",
-                  }}
-                />
-              )}
-            </div>
+            {/* Link în jurul imaginii pentru navigare */}
+            <Link href={`/client-compatibil?uid=${selectedUser?.uid}`}>
+              <div
+                className="shrink-0"
+                style={{ cursor: "pointer" }}
+                title="Vezi detalii client"
+              >
+                {selectedUser?.mainImage ? (
+                  <Image
+                    width={50}
+                    height={50}
+                    src={selectedUser?.mainImage}
+                    alt="image"
+                    className="size-50"
+                    style={{
+                      borderRadius: "25%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <FontAwesomeIcon
+                    icon={faUserCircle}
+                    size="2x"
+                    className="text-muted"
+                    style={{
+                      width: "50px",
+                      height: "50px",
+                    }}
+                  />
+                )}
+              </div>
+            </Link>
             <div className="ml-10">
               <div className="lh-11 fw-500 text-dark-1">
                 {selectedUser?.username}
@@ -101,36 +114,37 @@ export default function ConversationChat({
                   msg?.senderId === userData?.uid ? "justify-end" : ""
                 }`}
               >
-                {/* Dacă mesajul e trimis de celălalt, îi afișăm avatarul */}
+                {/* Dacă mesajul e trimis de celălalt, îi afișăm avatarul cu Link */}
                 {msg?.senderId !== userData?.uid && (
-                  <div className="shrink-0">
-                    {selectedUser?.mainImage ? (
-                      <Image
-                        width={50}
-                        height={50}
-                        src={selectedUser?.mainImage}
-                        alt="Avatar"
-                        className="size-50"
-                        style={{
-                          borderRadius: "25%",
-                          objectFit: "cover",
-                        }}
-                      />
-                    ) : (
-                      <FontAwesomeIcon
-                        icon={faUserCircle}
-                        size="2x"
-                        className="text-muted"
-                        style={{ width: "50px", height: "50px" }}
-                      />
-                    )}
-                  </div>
+                  <Link href={`/client-compatibil?uid=${selectedUser?.uid}`}>
+                    <div className="shrink-0" style={{ cursor: "pointer" }}>
+                      {selectedUser?.mainImage ? (
+                        <Image
+                          width={50}
+                          height={50}
+                          src={selectedUser?.mainImage}
+                          alt="Avatar"
+                          className="size-50"
+                          style={{
+                            borderRadius: "25%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faUserCircle}
+                          size="2x"
+                          className="text-muted"
+                          style={{ width: "50px", height: "50px" }}
+                        />
+                      )}
+                    </div>
+                  </Link>
                 )}
 
                 {/* Afișăm "You" sau "username" + iconița de "seen/sent" dacă e mesaj de la tine */}
                 <div className="lh-11 fw-500 text-dark-1 ml-10">
                   {msg?.senderId === userData?.uid ? "You" : selectedUser?.username}
-                
                 </div>
 
                 {/* Timpul când a fost trimis mesajul */}
@@ -150,18 +164,18 @@ export default function ConversationChat({
                         })}
                 </div>
                 {msg?.senderId === userData?.uid && (
-                    msg?.status === "seen" ? (
-                      <FaCheckDouble
-                        title="Seen"
-                        style={{ color: "blue", marginLeft: 8 }}
-                      />
-                    ) : (
-                      <FaCheckCircle
-                        title="Sent"
-                        style={{ color: "gray", marginLeft: 8 }}
-                      />
-                    )
-                  )}
+                  msg?.status === "seen" ? (
+                    <FaCheckDouble
+                      title="Seen"
+                      style={{ color: "blue", marginLeft: 8 }}
+                    />
+                  ) : (
+                    <FaCheckCircle
+                      title="Sent"
+                      style={{ color: "gray", marginLeft: 8 }}
+                    />
+                  )
+                )}
               </div>
 
               {/* Conținutul mesajului */}
@@ -224,9 +238,9 @@ export default function ConversationChat({
       </div>
 
       {/* Zona de input pentru compunere mesaj */}
-      <div className="py-25 px-40 border-top-light">
+      <div className="py-25 px-40 border-top-light" style={{ position: "relative" }}>
         <div className="row y-gap-10 justify-between">
-          <div className="col-lg-7">
+          <div className="col-lg-7" style={{ position: "relative" }}>
             <textarea
               required
               className="py-20 w-1/1"
@@ -236,7 +250,7 @@ export default function ConversationChat({
               placeholder="Type a Message"
               onKeyDown={(e) => {
                 handleKeyDown(e);
-                handleTyping(); // activează logica typing
+                handleTyping();
               }}
               style={{
                 resize: "none",
@@ -248,6 +262,25 @@ export default function ConversationChat({
                 overflowY: "auto",
               }}
             />
+            {/* Buton pentru toggle emoji picker */}
+            <button
+              type="button"
+              onClick={() => setShowEmojiPicker((prev) => !prev)}
+              style={{
+                position: "absolute",
+                right: "-20px",
+                top: "0px",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "1.5rem",
+              }}
+              title="Selectează un emoji"
+            >
+              😊
+            </button>
+            {/* Renderizarea selectorului de emoji-uri */}
+            {showEmojiPicker && <EmojiPickerDesktop onEmojiClick={onEmojiClick} />}
           </div>
           <div className="col-auto">
             <button
