@@ -195,30 +195,63 @@ export function useMessageLogic() {
   }, [messages]);
 
   // Trimite mesaj
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedUser) return;
-    if (!isSubscribed && allowedConversation && selectedUser.id !== allowedConversation.id) {
-      router.push("/subscriptions");
-      return;
-    }
-    const messageData = {
-      senderId: userData.uid,
-      receiverId: selectedUser.id,
-      content: newMessage,
-      timestamp: new Date(),
-      status: "sent",
-    };
-    // Adăugăm mesajul în ambele locații
-    await addDoc(
-      collection(db, "Chats", `${userData.uid}-${selectedUser.id}`, "Messages"),
-      messageData
-    );
-    await addDoc(
-      collection(db, "Chats", `${selectedUser.id}-${userData.uid}`, "Messages"),
-      messageData
-    );
-    setNewMessage("");
+// Trimite mesaj
+const handleSendMessage = async () => {
+  if (!newMessage.trim() || !selectedUser) return;
+  if (!isSubscribed && allowedConversation && selectedUser.id !== allowedConversation.id) {
+    router.push("/subscriptions");
+    return;
+  }
+
+  // Datele mesajului
+  const messageData = {
+    senderId: userData.uid,
+    receiverId: selectedUser.id,
+    content: newMessage,
+    timestamp: new Date(),
+    status: "sent",
   };
+
+  // Construim cele două chatId-uri
+  const chatId1 = `${userData.uid}-${selectedUser.id}`;
+  const chatId2 = `${selectedUser.id}-${userData.uid}`;
+
+  try {
+    // 1. Asigură-te că documentul părinte (Chats/chatId1) are câmpurile "exists" și "documentId"
+    const chatDocRef1 = doc(db, "Chats", chatId1);
+    await setDoc(
+      chatDocRef1,
+      {
+        exists: true,                 // sau orice câmp vrei 
+        documentId: chatId1,         // stochezi ID-ul explicit 
+        createdAt: new Date(),       // exemplu de câmp suplimentar
+      },
+      { merge: true }
+    );
+
+    // 2. Asigură-te că documentul părinte (Chats/chatId2) are câmpurile "exists" și "documentId"
+    const chatDocRef2 = doc(db, "Chats", chatId2);
+    await setDoc(
+      chatDocRef2,
+      {
+        exists: true,
+        documentId: chatId2,
+        createdAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    // 3. Adăugăm mesajul în subcolecția "Messages" la ambele conversații
+    await addDoc(collection(db, "Chats", chatId1, "Messages"), messageData);
+    await addDoc(collection(db, "Chats", chatId2, "Messages"), messageData);
+
+    // Resetăm câmpul de mesaj
+    setNewMessage("");
+  } catch (error) {
+    console.error("Error sending message:", error);
+  }
+};
+
 
   // Enter trimite mesaj (dacă nu e SHIFT+ENTER)
   const handleKeyDown = (e) => {

@@ -104,6 +104,13 @@ const SignUpForm = ({
       isValid = false;
     }
 
+      // Adăugăm validarea pentru poza de profil:
+  if (tempImages.length === 0) {
+    errors.profilePicture = translatedLinks.adaugaOPoza;
+    isValid = false;
+  }
+
+
  
 
     setFormErrors(errors);
@@ -354,7 +361,7 @@ const SignUpForm = ({
                 onSubmit={handleSubmit}
               >
                 {/* Câmp pentru încărcarea imaginii */}
-                {true ? null : (
+                {false ? null : (
                   <div
                     className="row y-gap-10 x-gap-10 items-center"
                     style={{ flexWrap: "wrap" }}
@@ -443,6 +450,14 @@ const SignUpForm = ({
                     </label>
                   </div>
                 )}
+
+{formErrors.profilePicture && (
+  <div style={{ color: "red" }} className="mt-1">
+    {formErrors.profilePicture}
+  </div>
+)}
+
+
 
                 {/* Câmp pentru încărcarea videoclipului */}
                 {false && (

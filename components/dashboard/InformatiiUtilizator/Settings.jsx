@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import EditProfile from "./EditProfile";
 import Password from "./Password";
 import SocialProfiles from "./SocialProfiles";
@@ -52,7 +52,6 @@ function calculateDestinyNumber(dateStr) {
   return sum;
 }
 
-
 export default function Settings({ translatedTexts }) {
   const [users, setUsers] = useState([]);
   const [currentUserResponses, setCurrentUserResponses] = useState({});
@@ -65,42 +64,57 @@ export default function Settings({ translatedTexts }) {
   const searchParams = useSearchParams();
   const uid = searchParams.get("uid");
 
-
-
-const getCompatibilityDescription = (currentElement, userElement, currentDestiny, userDestiny) => {
-  // Determină cheia pentru astrologie (încercăm și varianta inversă dacă nu există)
-  let astroKey = `${currentElement}-${userElement}`;
-  console.log("astroKey...", astroKey)
-  if (!compatibilityData.astrology[astroKey]) {
-    astroKey = `${userElement}-${currentElement}`;
-  }
-  const astroDesc = compatibilityData.astrology[astroKey] || {
-    positive: "Compatibilitate astrologică generală.",
-    challenge: "Provocări posibile în comunicare."
+  // ---- Nou: Ref pentru contorizarea auto-marcărilor și funcția registerAutoMark ----
+  const autoMarkCountRef = useRef(0);
+  const AUTO_MARK_LIMIT = 3; // Limita de auto-marcare per acces al paginii
+  const registerAutoMark = () => {
+    if (autoMarkCountRef.current < AUTO_MARK_LIMIT) {
+      autoMarkCountRef.current++;
+      return true;
+    }
+    return false;
   };
 
-  // Pentru numerologie, folosim regulile de par/impar
-  let numKey = "";
-  const currentIsEven = currentDestiny % 2 === 0;
-  const userIsEven = userDestiny % 2 === 0;
-  if (currentIsEven && userIsEven) {
-    numKey = "Par-Par";
-  } else if (!currentIsEven && !userIsEven) {
-    numKey = "Impar-Impar";
-  } else {
-    numKey = "Par-Impar";
-  }
-  const numDesc = compatibilityData.numerology[numKey] || {
-    positive: "Compatibilitate numerologică bună.",
-    challenge: "Pot apărea neînțelegeri ocazionale."
-  };
+  // Resetează contorul la montarea componentei Settings (adică la fiecare acces în pagina utilizatorului)
+  useEffect(() => {
+    autoMarkCountRef.current = 0;
+  }, []);
 
-  return {
-    astrology: astroDesc,
-    numerology: numDesc,
-  };
-};
+  // ---- Sfârșit secțiune mark limit ----
 
+  const getCompatibilityDescription = (currentElement, userElement, currentDestiny, userDestiny) => {
+    // Determină cheia pentru astrologie (încercăm și varianta inversă dacă nu există)
+    let astroKey = `${currentElement}-${userElement}`;
+    console.log("astroKey...", astroKey);
+    if (!compatibilityData.astrology[astroKey]) {
+      astroKey = `${userElement}-${currentElement}`;
+    }
+    const astroDesc = compatibilityData.astrology[astroKey] || {
+      positive: "Compatibilitate astrologică generală.",
+      challenge: "Provocări posibile în comunicare."
+    };
+
+    // Pentru numerologie, folosim regulile de par/impar
+    let numKey = "";
+    const currentIsEven = currentDestiny % 2 === 0;
+    const userIsEven = userDestiny % 2 === 0;
+    if (currentIsEven && userIsEven) {
+      numKey = "Par-Par";
+    } else if (!currentIsEven && !userIsEven) {
+      numKey = "Impar-Impar";
+    } else {
+      numKey = "Par-Impar";
+    }
+    const numDesc = compatibilityData.numerology[numKey] || {
+      positive: "Compatibilitate numerologică bună.",
+      challenge: "Pot apărea neînțelegeri ocazionale."
+    };
+
+    return {
+      astrology: astroDesc,
+      numerology: numDesc,
+    };
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -136,7 +150,6 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
     setCurrentPage(1);
   }, [searchTerm, users]);
 
-
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -149,25 +162,25 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
   //  - [2]: "Ce tip de relație cauți?" (pentru a filtra relațiile)
   const calculateCompatibility = (userResponses) => {
     const currentResponses = currentUserResponses || {};
-  
+
     const currentZodiac = currentResponses.firstQuestions?.[0]?.answer;
     const currentBirthDate = currentResponses.firstQuestions?.[1]?.answer;
     const currentRelationType = currentResponses.firstQuestions?.[2]?.answer;
-  
+
     const userZodiac = userResponses.firstQuestions?.[0]?.answer;
     const userBirthDate = userResponses.firstQuestions?.[1]?.answer;
     const userRelationType = userResponses.firstQuestions?.[2]?.answer;
-  
+
     if (!currentZodiac || !currentBirthDate || !userZodiac || !userBirthDate) {
       return null; // Date insuficiente
     }
-  
+
     // Verificăm dacă tipurile de relație sunt compatibile
     if (currentRelationType !== userRelationType) {
       console.log("Incompatible relation types:", currentRelationType, userRelationType);
       return null;
     }
-  
+
     // Calcul compatibilitate astrologică
     const currentElement = zodiacElements[currentZodiac];
     const userElement = zodiacElements[userZodiac];
@@ -177,7 +190,7 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
         ? 100
         : 0;
     }
-  
+
     // Calcul compatibilitate numerologică
     const currentDestiny = calculateDestinyNumber(currentBirthDate);
     const userDestiny = calculateDestinyNumber(userBirthDate);
@@ -191,10 +204,10 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
     } else {
       numerologyScore = 100;
     }
-  
+
     // Scorul final
     const overallScore = Math.round((astrologyScore + numerologyScore) / 2);
-  
+
     // Obținem descrierea compatibilității folosind funcția definită mai sus
     const compatibilityDescription = getCompatibilityDescription(
       currentElement,
@@ -202,7 +215,7 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
       currentDestiny,
       userDestiny
     );
-  
+
     return {
       compatibilityScore: overallScore,
       details: {
@@ -228,27 +241,31 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
       },
     };
   };
-  
 
   const compatibleUsers = users
-  .filter((user) => user.responses)
-  .map((user) => ({
-    ...user,
-    compatibility: calculateCompatibility(user.responses),
-  }))
-  .filter((user) => user.compatibility !== null)
-  .sort(
-    (a, b) =>
-      b.compatibility.compatibilityScore - a.compatibility.compatibilityScore
-  );
+    .filter((user) => user.responses)
+    .map((user) => ({
+      ...user,
+      compatibility: calculateCompatibility(user.responses),
+    }))
+    .filter((user) => user.compatibility !== null)
+    .sort(
+      (a, b) =>
+        b.compatibility.compatibilityScore - a.compatibility.compatibilityScore
+    );
 
-    // Calculăm utilizatorii pentru pagina curentă
-    const totalCompatibleUsers = compatibleUsers.length;
-    const indexOfLastUser = currentPage * usersPerPage;
-    const indexOfFirstUser = indexOfLastUser - usersPerPage;
-    const currentCompatibleUsers = compatibleUsers.slice(indexOfFirstUser, indexOfLastUser);
-    
-
+  // Calculăm utilizatorii pentru pagina curentă
+  const totalCompatibleUsers = compatibleUsers.length;
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentCompatibleUsers = compatibleUsers.slice(indexOfFirstUser, indexOfLastUser);
+  
+  useEffect(() => {
+    // Resetează contorul la fiecare acces al paginii
+    if (typeof window !== 'undefined') {
+      autoMarkCountRef.current = 0;
+    }
+  }, []);
 
   return (
     <div className="dashboard__main">
@@ -293,13 +310,15 @@ const getCompatibilityDescription = (currentElement, userElement, currentDestiny
                           </tr>
                         </thead>
                         <tbody>
-                          {compatibleUsers.map((user) => (
+                          {compatibleUsers.map((user, index) => (
                             <ListCompatibilitati
                               data={user}
                               key={user.id}
                               compatibility={user?.compatibility?.compatibilityScore}
                               translatedTexts={translatedTexts}
                               userUid={uid}
+                              index={index} // transmit indexul aici
+                              registerAutoMark={registerAutoMark} // transmit funcția de auto-mark
                             />
                           ))}
                         </tbody>

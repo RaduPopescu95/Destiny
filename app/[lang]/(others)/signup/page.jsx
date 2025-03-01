@@ -146,6 +146,10 @@ export default async function Page({ params }) {
         targetLanguage
       ),
     },
+    adaugaOPoza: await fetchTranslation(
+      "Este nevoie de cel putin o poza de profil",
+      targetLanguage
+    ),
   };
   
   return (

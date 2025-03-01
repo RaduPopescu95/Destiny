@@ -381,8 +381,8 @@
 }
 @media (max-width: 768px) {
   .mobile-logo-img {
-    width: 250px;
-    height: 250px;
+    width: 250px !important;
+    height: 250px !important;
     position: relative;
     top: 30px;
   }

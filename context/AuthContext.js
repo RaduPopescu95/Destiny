@@ -1,11 +1,6 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { authentication, db } from "../firebase";
-import { handleGetUserInfo } from "../utils/handleFirebaseQuery";
-import {
-  handleGetFirestore,
-  handleGetUserInfoJobs,
-} from "@/utils/firestoreUtils";
 import {
   collection,
   doc,
@@ -30,26 +25,36 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = authentication.onAuthStateChanged(async (user) => {
       if (user) {
-        setCurrentUser(user); // Așteaptă ca utilizatorul să fie setat
+        setCurrentUser(user);
 
         try {
-          // Asigură-te că UID-ul utilizatorului este disponibil
-          const q = query(
-            collection(db, "Users"),
-            where("uid", "==", user.uid)
-          );
-          const querySnapshot = await getDocs(q); // Așteaptă răspunsul de la Firestore
+          // Căutăm documentul din colecția "Users" unde "uid" == user.uid
+          const q = query(collection(db, "Users"), where("uid", "==", user.uid));
+          const querySnapshot = await getDocs(q);
 
           if (!querySnapshot.empty) {
-            querySnapshot.forEach((doc) => setUserData(doc.data())); // Setează datele utilizatorului
+            // În mod normal, te aștepți la un singur document (un singur user cu acest UID)
+            querySnapshot.forEach(async (docSnap) => {
+              const userDocData = docSnap.data();
+              setUserData(userDocData);
+
+              // Setăm lastTimeActive = new Date() pentru a-l actualiza
+              // Observație: docSnap.id este ID-ul documentului din colecția Users
+              const userDocRef = doc(db, "Users", docSnap.id);
+              await setDoc(
+                userDocRef,
+                { 
+                  lastTimeActive: new Date() 
+                },
+                { merge: true }
+              );
+            });
           } else {
-            console.log(
-              "Niciun document găsit pentru acest UID în colecția Users."
-            );
+            console.log("Niciun document găsit pentru acest UID în colecția Users.");
           }
         } catch (error) {
           console.error(
-            "Eroare la preluarea datelor utilizatorului din Firestore:",
+            "Eroare la preluarea/actualizarea datelor utilizatorului din Firestore:",
             error
           );
         }
@@ -58,7 +63,7 @@ export const AuthProvider = ({ children }) => {
         setUserData(null);
       }
 
-      setLoading(false); // Setează `loading` ca `false` după finalizarea procesului
+      setLoading(false);
     });
 
     return unsubscribe;
@@ -72,11 +77,9 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     userData,
     loading,
-
     setUserData,
     setCurrentUser,
     setLoading,
-
     language,
     changeLanguage,
   };
