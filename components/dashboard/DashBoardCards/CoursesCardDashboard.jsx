@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import { useRouter } from "next/navigation";
 
@@ -11,26 +10,41 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
     router.push(`/informatii-utilizator?uid=${data.id}`);
   };
 
-  // Conversie lastTimeActive la un format frumos (dacă e string)
+  // Conversie lastTimeActive la un format frumos
   let lastActiveDisplay = "N/A";
   if (data.lastTimeActive) {
     try {
       const d = new Date(data.lastTimeActive);
-      lastActiveDisplay = d.toLocaleString(); 
-      // poți ajusta la .toLocaleDateString() etc.
+      lastActiveDisplay = d.toLocaleString();
     } catch (err) {
       console.error("Eroare conversie lastTimeActive:", err);
     }
   }
 
+  // Conversie lastCompatibility la un format frumos
+  let lastCompatDisplay = "N/A";
+  if (data.lastCompatibility) {
+    try {
+      const d = new Date(data.lastCompatibility);
+      lastCompatDisplay = d.toLocaleString();
+    } catch (err) {
+      console.error("Eroare conversie lastCompatibility:", err);
+    }
+  }
+
   return (
-    <tr onClick={handleCardClick} style={{ cursor: "pointer" }}>
+    <tr style={{ cursor: "pointer" }}>
       <td>
         {data.images && data.images.length > 0 ? (
           <img
             src={data.images[0].fileUri}
             alt="Poză profil"
-            style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "50%" }}
+            style={{
+              width: "50px",
+              height: "50px",
+              objectFit: "cover",
+              borderRadius: "50%",
+            }}
           />
         ) : (
           "N/A"
@@ -43,7 +57,9 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
       <td>{data.gender ? data.gender : "N/A"}</td>
       <td>{data.compatCount !== undefined ? data.compatCount : 0}</td>
       <td>{data.chatCount !== undefined ? data.chatCount : 0}</td>
-      {/* Coloana nouă: Last Active */}
+      {/* Coloana pentru ultima compatibilitate */}
+      <td>{lastCompatDisplay}</td>
+      {/* Coloana pentru lastTimeActive */}
       <td>{lastActiveDisplay}</td>
       <td>
         {data.isActivated

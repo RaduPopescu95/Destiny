@@ -70,77 +70,88 @@ export default function ListCompatibilitati({
     checkCompatibility();
   }, [data.id, userUid]);
 
+
+
   const handleCardClick = () => {
     router.push(`/informatii-utilizator?uid=${data.id}`);
   };
 
   const handleToggleCompatibility = async (autoMark = false) => {
+    // Nu permite compatibilitatea cu propriul cont
+    if (data.id === userUid) {
+      console.warn("Nu este permisă marcarea compatibilității cu propriul cont.");
+      return;
+    }
     try {
       const compatRefUser1 = collection(db, "Users", userUid, "Compatibilitati");
       const compatRefUser2 = collection(db, "Users", data.id, "Compatibilitati");
-
+  
       if (isCompatible) {
         return;
       } else {
         const compatibilityDescription =
           data.compatibility.details.compatibilityDescription;
         const compatibilityScore = data.compatibility.compatibilityScore;
-
+  
         const newData = {
           compatibleUserId: data.id,
           markedAt: new Date(),
           compatibilityDescription,
           compatibilityScore,
         };
-
+  
         if (autoMark) newData.auto = true;
-
+  
         const docRefUser1 = await addDoc(compatRefUser1, newData);
         await updateDoc(docRefUser1, { documentId: docRefUser1.id });
-
+  
         const docRefUser2 = await addDoc(compatRefUser2, newData);
         await updateDoc(docRefUser2, { documentId: docRefUser2.id });
-
+  
         setIsCompatible(true);
       }
     } catch (error) {
       console.error("Error toggling compatibility:", error);
     }
   };
+  
 
-  useEffect(() => {
-    const autoMark = async () => {
-      if (autoMarkDone.current) return;
-      if (
-        !isCompatible &&
-        data.compatibility &&
-        data.compatibility.compatibilityScore >= 90 &&
-        currentUserRelation
-      ) {
-        let eligible = false;
-        if (currentUserRelation === "Prietenie") {
-          eligible = true;
-        } else if (
-          (currentUserRelation === "Relație de lungă durată" ||
-            currentUserRelation === "Relație casual") &&
-          currentUserGender &&
-          data.gender &&
-          currentUserGender !== data.gender
-        ) {
-          eligible = true;
-        }
-        if (!eligible) return;
-
-        // Folosim funcția registerAutoMark primită din părinte
-        if (registerAutoMark && registerAutoMark()) {
-          await handleToggleCompatibility(true);
-          autoMarkDone.current = true;
-        }
-      }
-    };
-    autoMark();
-  }, [currentUserRelation, currentUserGender, data, isCompatible, index, registerAutoMark]);
-
+  // useEffect(() => {
+  //   const autoMark = async () => {
+  //     // Verificare: dacă se compară cu propriul cont, nu face nimic
+  //     if (data.id === userUid) return;
+      
+  //     if (autoMarkDone.current) return;
+  //     if (
+  //       !isCompatible &&
+  //       data.compatibility &&
+  //       data.compatibility.compatibilityScore >= 80 &&
+  //       currentUserRelation
+  //     ) {
+  //       let eligible = false;
+  //       if (currentUserRelation === "Prietenie") {
+  //         eligible = true;
+  //       } else if (
+  //         (currentUserRelation === "Relație de lungă durată" ||
+  //           currentUserRelation === "Relație casual") &&
+  //         currentUserGender &&
+  //         data.gender &&
+  //         currentUserGender !== data.gender
+  //       ) {
+  //         eligible = true;
+  //       }
+  //       if (!eligible) return;
+  
+  //       // Folosim funcția registerAutoMark primită din părinte
+  //       if (registerAutoMark && registerAutoMark()) {
+  //         await handleToggleCompatibility(true);
+  //         autoMarkDone.current = true;
+  //       }
+  //     }
+  //   };
+  //   autoMark();
+  // }, [currentUserRelation, currentUserGender, data, isCompatible, index, registerAutoMark]);
+  
   const styles = StyleSheet.create({
     page: { padding: 30 },
     title: { fontSize: 18, marginBottom: 10, textAlign: "center", color: "#003366" },

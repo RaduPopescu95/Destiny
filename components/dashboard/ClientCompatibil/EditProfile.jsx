@@ -299,33 +299,78 @@ export default function EditProfile({
             ></textarea>
           </div> */}
 
-          {compatibilityInfo && (
+{compatibilityInfo && (
   <div className="compatibility-info animated">
     <h2>Compatibilitate</h2>
     <div className="compatibility-percent">
-      <strong>Scor:</strong> <span className="score">{compatibilityInfo.compatibilityScore}%</span>
+      <strong>Scor:</strong>{" "}
+      <span className="score">
+        {compatibilityInfo.compatibilityScore}%
+      </span>
     </div>
+
     <div className="compatibility-descriptions">
+      {/* --- ASTROLOGIE --- */}
       <div className="description-block">
         <h3>Astrologie</h3>
         <p>
-          <strong>Aspecte pozitive:</strong>{" "}
-          {compatibilityInfo.compatibilityDescription.astrology.positive}
+          <strong>
+            {/* Dacă există .dragoste/.finante, afișăm "Dragoste", altfel "Aspecte pozitive" */}
+            {compatibilityInfo.compatibilityDescription.astrology.dragoste &&
+             compatibilityInfo.compatibilityDescription.astrology.finante
+              ? "Dragoste:"
+              : "Aspecte pozitive:"}
+          </strong>{" "}
+          {/* Afișăm conținutul din dragoste sau positive, în funcție de ce există */}
+          {compatibilityInfo.compatibilityDescription.astrology.dragoste &&
+           compatibilityInfo.compatibilityDescription.astrology.finante
+            ? compatibilityInfo.compatibilityDescription.astrology.dragoste
+            : compatibilityInfo.compatibilityDescription.astrology.positive}
         </p>
+
         <p>
-          <strong>Provocări:</strong>{" "}
-          {compatibilityInfo.compatibilityDescription.astrology.challenge}
+          <strong>
+            {/* Dacă există .dragoste/.finante, afișăm "Finanțe", altfel "Provocări" */}
+            {compatibilityInfo.compatibilityDescription.astrology.dragoste &&
+             compatibilityInfo.compatibilityDescription.astrology.finante
+              ? "Finanțe:"
+              : "Provocări:"}
+          </strong>{" "}
+          {/* Afișăm conținutul din finante sau challenge, în funcție de ce există */}
+          {compatibilityInfo.compatibilityDescription.astrology.dragoste &&
+           compatibilityInfo.compatibilityDescription.astrology.finante
+            ? compatibilityInfo.compatibilityDescription.astrology.finante
+            : compatibilityInfo.compatibilityDescription.astrology.challenge}
         </p>
       </div>
+
+      {/* --- NUMEROLOGIE --- */}
       <div className="description-block">
         <h3>Numerologie</h3>
         <p>
-          <strong>Aspecte pozitive:</strong>{" "}
-          {compatibilityInfo.compatibilityDescription.numerology.positive}
+          <strong>
+            {compatibilityInfo.compatibilityDescription.numerology.dragoste &&
+             compatibilityInfo.compatibilityDescription.numerology.finante
+              ? "Dragoste:"
+              : "Aspecte pozitive:"}
+          </strong>{" "}
+          {compatibilityInfo.compatibilityDescription.numerology.dragoste &&
+           compatibilityInfo.compatibilityDescription.numerology.finante
+            ? compatibilityInfo.compatibilityDescription.numerology.dragoste
+            : compatibilityInfo.compatibilityDescription.numerology.positive}
         </p>
+
         <p>
-          <strong>Provocări:</strong>{" "}
-          {compatibilityInfo.compatibilityDescription.numerology.challenge}
+          <strong>
+            {compatibilityInfo.compatibilityDescription.numerology.dragoste &&
+             compatibilityInfo.compatibilityDescription.numerology.finante
+              ? "Finanțe:"
+              : "Provocări:"}
+          </strong>{" "}
+          {compatibilityInfo.compatibilityDescription.numerology.dragoste &&
+           compatibilityInfo.compatibilityDescription.numerology.finante
+            ? compatibilityInfo.compatibilityDescription.numerology.finante
+            : compatibilityInfo.compatibilityDescription.numerology.challenge}
         </p>
       </div>
     </div>
