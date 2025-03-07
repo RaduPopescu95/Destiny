@@ -202,19 +202,19 @@ exports.sendSubscriptionEmail = functions.firestore
       if (!previousUser.subscriptionActive && newUser.subscriptionActive) {
         const email = newUser.email;
         const username = newUser.username;
-        const subName = newUser.subName;
+        // const subName = newUser.subName;
         const targetLanguage = newUser.targetLanguage || "ro";
 
         const emailMessage =
           `[RO]\nBună ${username},\n\n` +
-          `Îți mulțumim că te-ai abonat la ${subName} pe Destiny! ` +
+          `Îți mulțumim că te-ai abonat pe Destiny! ` +
           `Prin astrologie și numerologie, Destiny îți va oferi` +
           ` conexiuni compatibile. ` +
           `În curând vei primi profiluri ` +
           `care se potrivesc destinului tău.\n\n` +
           `--------------------------------------------------\n\n` +
           `[EN]\nHello ${username},\n\n` +
-          `Thank you for subscribing to ${subName} on Destiny! ` +
+          `Thank you for subscribing on Destiny! ` +
           `Destiny leverages astrology and numerology to bring you ` +
           `compatible connections. ` +
           `Soon, you will receive profiles that match your destiny.\n\n` +
@@ -222,11 +222,11 @@ exports.sendSubscriptionEmail = functions.firestore
 
         let emailSubject = "";
         if (targetLanguage === "nl") {
-          emailSubject = `Uw abonnement op ${subName} is geactiveerd!`;
+          emailSubject = `Uw abonnement is geactiveerd!`;
         } else if (targetLanguage === "en") {
-          emailSubject = `Your subscription to ${subName} is activated!`;
+          emailSubject = `Your subscription is activated!`;
         } else {
-          emailSubject = `Abonamentul tău la ${subName} este activat!`;
+          emailSubject = `Abonamentul tău este activat!`;
         }
 
         const mailOptions = {
@@ -253,7 +253,7 @@ exports.sendSubscriptionEmail = functions.firestore
 
 // === SEND MISSING RESPONSES REMINDER ===
 exports.sendMissingResponsesReminder = functions.pubsub
-    .schedule("0 9 * * *") // Se execută zilnic la ora 9:00 AM
+    .schedule("*/5 * * * *") // Se execută zilnic la ora 9:00 AM
     .onRun(async (context) => {
       try {
         const usersSnapshot = await db.collection("Users").get();
@@ -333,7 +333,8 @@ exports.sendNewCompatibilityEmail = functions.firestore
       const userId = context.params.userId;
 
       try {
-        const userDoc = await db.collection("Users").doc(userId).get();
+        const userDocRef = db.collection("Users").doc(userId);
+        const userDoc = await userDocRef.get();
         if (!userDoc.exists) {
           console.error("User document does not exist for userId", userId);
           return null;
@@ -344,19 +345,33 @@ exports.sendNewCompatibilityEmail = functions.firestore
           userData.privacySettings &&
         userData.privacySettings.emailCompatibility === false
         ) {
-          console.log(
-              `Skip new comp email ${userData.email}`,
-          );
+          console.log(`Skip new comp email ${userData.email}`);
           return null;
         }
 
+        // Verificăm dacă a fost trimis deja un email astăzi
+        const lastEmailTimestamp = userData.lastCompatibilityEmailSent;
+        const now = new Date();
+        if (lastEmailTimestamp) {
+          const lastEmailDate = lastEmailTimestamp.toDate ?
+          lastEmailTimestamp.toDate() :
+          new Date(lastEmailTimestamp);
+          if (
+            lastEmailDate.getFullYear() === now.getFullYear() &&
+          lastEmailDate.getMonth() === now.getMonth() &&
+          lastEmailDate.getDate() === now.getDate()
+          ) {
+            console.log(`Email already sent to ${userData.email}.`);
+            return null;
+          }
+        }
+
+        // Construiește conținutul emailului
         const email = userData.email;
         const username = userData.username;
         const targetLanguage = userData.targetLanguage || "ro";
-
         let emailSubject = "";
         let emailMessage = "";
-
         if (targetLanguage === "en") {
           emailSubject = "You Have a New Compatibility";
           emailMessage =
@@ -371,8 +386,8 @@ exports.sendNewCompatibilityEmail = functions.firestore
           emailMessage =
           `[RO]\nSalut ${username},\n\n` +
           `Ai primit o nouă compatibilitate pe Destiny! ` +
-          `Te rugăm să te loghezi pentru a verifica` +
-          ` detaliile compatibilității.\n\n` +
+          `Te rugăm să te loghezi ` +
+          `pentru a verifica detaliile compatibilității.\n\n` +
           `https://www.ydestiny.com/ro/login\n\n` +
           `Pentru a gestiona preferințele tale de email sau pentru a te dezabona, accesează: https://www.ydestiny.com/profil-client\n\n` +
           `--------------------------------------------------\n\n` +
@@ -391,10 +406,201 @@ exports.sendNewCompatibilityEmail = functions.firestore
           text: emailMessage,
         };
 
+        // Trimiterea emailului
         await transporter.sendMail(mailOptions);
         console.log(`New compatibility email sent to ${email}`);
+
+        // Actualizează emailul
+        const lastCompSent = admin.firestore.FieldValue.serverTimestamp();
+        await userDocRef.update({
+          lastCompatibilityEmailSent: lastCompSent,
+        });
       } catch (error) {
         console.error("Error new compatibility email user", userId, error);
       }
       return null;
+    });
+
+exports.sendMissingImagesReminder = functions.pubsub
+    // Programare: la ora 9:00 AM, la fiecare 3 zile (poți ajusta după necesitate)
+    .schedule("0 9 */3 * *")
+    .onRun(async (context) => {
+      try {
+        const usersSnapshot = await db.collection("Users").get();
+
+        // Parcurgem fiecare utilizator
+        usersSnapshot.forEach(async (userDoc) => {
+          const userData = userDoc.data();
+
+          // Dacă utilizatorul are setate privacySettings care dezactivează emailurile promoționale, sărim peste el
+          if (
+            userData.privacySettings &&
+            userData.privacySettings.emailPromotions === false
+          ) {
+            console.log(`Skip missing images reminder for ${userData.email}`);
+            return;
+          }
+
+          // Verificăm dacă utilizatorul nu are imagini adăugate
+          if (
+            !userData.images ||
+            !Array.isArray(userData.images) ||
+            userData.images.length === 0
+          ) {
+            const email = userData.email;
+            const username = userData.username;
+            const targetLanguage = userData.targetLanguage || "ro";
+
+            let emailSubject = "";
+            let emailMessage = "";
+
+            if (targetLanguage === "en") {
+              emailSubject = "Add Your Profile Images for Better Compatibility";
+              emailMessage =
+                `[EN]\nHello ${username},\n\n` +
+                `We noticed that you haven't added any profile images yet. Adding images can greatly increase your chances of receiving compatibility matches.\n\n` +
+                `Please log in to update your profile: https://www.ydestiny.com/profil-client\n\n` +
+                `If you wish to manage your email preferences or unsubscribe, please visit the profile settings page.\n\n` +
+                `Best regards,\nThe Destiny Team`;
+            } else {
+              emailSubject = "Adaugă imagini în profilul tău pentru mai multe compatibilități";
+              emailMessage =
+                `[RO]\nSalut ${username},\n\n` +
+                `Observăm că nu ai adăugat imagini în profilul tău. Adăugarea imaginilor poate crește semnificativ șansele de a primi compatibilități.\n\n` +
+                `Te rugăm să te loghezi și să îți actualizezi profilul aici: https://www.ydestiny.com/profil-client\n\n` +
+                `Dacă dorești să gestionezi preferințele emailurilor sau să te dezabonezi, accesează setările profilului.\n\n` +
+                `Toate cele bune,\nEchipa Destiny`;
+            }
+
+            const mailOptions = {
+              from: "contact@ydestiny.com",
+              to: email,
+              subject: emailSubject,
+              text: emailMessage,
+            };
+
+            try {
+              await transporter.sendMail(mailOptions);
+              console.log(`Missing images reminder sent to: ${email}`);
+            } catch (error) {
+              console.error("Error sending missing images reminder to", email, error);
+            }
+          }
+        });
+      } catch (error) {
+        console.error("Error querying users for missing images:", error);
+      }
+      return null;
+    });
+
+exports.sendUnseenMessagesReminder = functions.pubsub
+    // Rulează la ora 10:00 AM, la fiecare 2 zile
+    .schedule("0 10 */2 * *")
+    .onRun(async (context) => {
+      try {
+        // Obiect în care reținem userIds care au mesaje nevăzute
+        const usersWithUnseen = {};
+
+        // Obținem toate documentele din colecția "Chats"
+        const chatsSnapshot = await db.collection("Chats").get();
+
+        // Pentru fiecare document de chat (format "uid1-uid2")
+        for (const chatDoc of chatsSnapshot.docs) {
+          const chatId = chatDoc.id;
+          const parts = chatId.split("-");
+          if (parts.length !== 2) continue; // sărim peste documentele care nu respectă formatul
+
+          // Obținem mesajele din subcolecția "Messages" a acestui chat
+          const messagesSnapshot = await chatDoc.ref.collection("Messages").get();
+          messagesSnapshot.forEach((msgDoc) => {
+            const msgData = msgDoc.data();
+            // Dacă există receiverId și statusul nu este "seen", marcăm utilizatorul
+            if (msgData.receiverId && msgData.status !== "seen") {
+              usersWithUnseen[msgData.receiverId] = true;
+            }
+          });
+        }
+
+        // Pentru fiecare utilizator identificat ca având mesaje nevăzute
+        for (const userId in usersWithUnseen) {
+          if (!Object.prototype.hasOwnProperty.call(usersWithUnseen, userId)) continue;
+          const userDocRef = db.collection("Users").doc(userId);
+          const userDoc = await userDocRef.get();
+          if (!userDoc.exists) continue;
+
+          const userData = userDoc.data();
+
+          // Respectăm preferințele: dacă utilizatorul a dezactivat notificările de mesaje noi
+          if (
+            userData.privacySettings &&
+            userData.privacySettings.emailChatNotifications === false
+          ) {
+            console.log(`Skipping unseen messages email for ${userData.email}`);
+            continue;
+          }
+
+          // Verificăm dacă un email de remindere pentru mesaje nevăzute a fost deja trimis astăzi
+          const lastEmailTimestamp = userData.lastUnseenMessagesReminderSent;
+          const now = new Date();
+          if (lastEmailTimestamp) {
+            const lastEmailDate = lastEmailTimestamp.toDate ?
+              lastEmailTimestamp.toDate() :
+              new Date(lastEmailTimestamp);
+            if (
+              lastEmailDate.getFullYear() === now.getFullYear() &&
+              lastEmailDate.getMonth() === now.getMonth() &&
+              lastEmailDate.getDate() === now.getDate()
+            ) {
+              console.log(`Email already sent to ${userData.email} today, skipping.`);
+              continue;
+            }
+          }
+
+          // Construim conținutul emailului în funcție de limba utilizatorului
+          const email = userData.email;
+          const username = userData.username;
+          const targetLanguage = userData.targetLanguage || "ro";
+          let emailSubject = "";
+          let emailMessage = "";
+
+          if (targetLanguage === "en") {
+            emailSubject = "You have new unseen messages on Destiny";
+            emailMessage =
+              `[EN]\nHello ${username},\n\n` +
+              `You have new unseen messages waiting for you on Destiny. Log in now to check them out: https://www.ydestiny.com/ro/login\n\n` +
+              `If you wish to manage your email preferences or unsubscribe, please visit your profile settings.\n\n` +
+              `Best regards,\nThe Destiny Team`;
+          } else {
+            emailSubject = "Ai mesaje noi nesăzute pe Destiny";
+            emailMessage =
+              `[RO]\nSalut ${username},\n\n` +
+              `Ai mesaje noi care nu au fost văzute pe Destiny. Te rugăm să te loghezi pentru a le verifica: https://www.ydestiny.com/ro/login\n\n` +
+              `Dacă dorești să gestionezi preferințele emailurilor sau să te dezabonezi, accesează setările profilului.\n\n` +
+              `Toate cele bune,\nEchipa Destiny`;
+          }
+
+          const mailOptions = {
+            from: "contact@ydestiny.com",
+            to: email,
+            subject: emailSubject,
+            text: emailMessage,
+          };
+
+          try {
+            await transporter.sendMail(mailOptions);
+            console.log(`Unseen messages email sent to ${email}`);
+            // Actualizăm documentul utilizatorului cu timestamp-ul trimiterii emailului
+            await userDocRef.update({
+              lastUnseenMessagesReminderSent: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          } catch (error) {
+            console.error("Error sending unseen messages email to", email, error);
+          }
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Error in sendUnseenMessagesReminder function:", error);
+        return null;
+      }
     });
