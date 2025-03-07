@@ -32,6 +32,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import IntroductionQuiz from "./SettingsClient/IntroductionQuiz";
 import EvitaRaspuns from "./EvitaRaspuns";
 import { translateTextQuiz } from "@/utils/translationUtils";
+import { zodiacTranslations } from "@/data/zodiacTranslations";
 
 const getQuestionSetName = () => "firstQuestions";
 
@@ -750,6 +751,17 @@ export default function QuizClient({
   //   setProgress(0);
   // };
 
+  // în componenta QuizClient
+const displayOption = (option) => {
+  const currentQuestion = currentQuestions[currentQuestionIndex];
+
+  if (currentQuestion.id === 1) { // id-ul întrebării cu zodii
+    return zodiacTranslations[targetLanguage][option] || option;
+  }
+  
+  return translatedOptions[option] || option;
+};
+
   if (quizFinished && isEditQuiz) {
     router.push("/profil-client");
   }
@@ -1252,7 +1264,8 @@ export default function QuizClient({
                                   </div>
                                 </div>
                                 <div className="fw-500 ml-12">
-                                  {translatedOptions[option] || option}
+                                  {/* {translatedOptions[option] || option} */}
+                                  {displayOption(option)}
                                 </div>
                               </div>
                             ))}

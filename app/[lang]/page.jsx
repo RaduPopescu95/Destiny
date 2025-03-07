@@ -70,7 +70,7 @@ export default async function HomePage({ params }) {
             targetLanguage
           ),
           bookingText2: await fetchTranslation(
-            "Ouverture de dossier et premier Rendez-vous en présentiel : 159,00€ TVAC",
+            "Îți dorești să-ți crești șansele de a obține o compatibilitate? Abonamentul nostru reprezintă o funcție exclusivă pentru abonații Destiny, care te ajută să te asiguri că profilul tau este văzut mai repede de o potențială compatibilitate, înainte de profilurile celor non-abonați.",
             targetLanguage
           ),
           paymentOneTimeText: await fetchTranslation(
@@ -174,13 +174,13 @@ export default async function HomePage({ params }) {
 
       <div className="content-wrapper  js-content-wrapper overflow-hidden">
       <HomeHero translatedLinks={translatedLinks}/> 
-         {/* <Brands /> */}
-        {/* <Categories /> */}
-        {/* <Courses /> */}
+         {/* <Brands />
+        <Categories />
+        <Courses /> */}
         <FeaturesOne translatedLinks={translatedLinks}/>
         <WhyCourse translatedLinks={translatedLinks}/>
         <TestimonialsOne translatedLinks={translatedLinks}/>
-    {/* <Subscriptions
+    <Subscriptions
           bookingText={translatedLinks.bookingText}
           paymentOneTimeText={translatedLinks.paymentOneTimeText}
           oneTimeFeature1={translatedLinks.oneTimeFeature1}
@@ -190,7 +190,7 @@ export default async function HomePage({ params }) {
           getStarted={translatedLinks.getStarted}
           acceptTermsText={translatedLinks.acceptTermsText}
           translatedLinks={translatedLinks}
-        /> */}
+        />
         {/* <Instructors /> */}
         {/* <GetApp /> */}
         {/* <Blog /> */}

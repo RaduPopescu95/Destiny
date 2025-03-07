@@ -14,7 +14,9 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
   let lastActiveDisplay = "N/A";
   if (data.lastTimeActive) {
     try {
-      const d = new Date(data.lastTimeActive);
+      const d = data.lastTimeActive.toDate
+        ? data.lastTimeActive.toDate()
+        : new Date(data.lastTimeActive);
       lastActiveDisplay = d.toLocaleString();
     } catch (err) {
       console.error("Eroare conversie lastTimeActive:", err);
@@ -25,13 +27,14 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
   let lastCompatDisplay = "N/A";
   if (data.lastCompatibility) {
     try {
-      const d = new Date(data.lastCompatibility);
+      const d = data.lastCompatibility.toDate
+        ? data.lastCompatibility.toDate()
+        : new Date(data.lastCompatibility);
       lastCompatDisplay = d.toLocaleString();
     } catch (err) {
       console.error("Eroare conversie lastCompatibility:", err);
     }
   }
-
   return (
     <tr style={{ cursor: "pointer" }}>
       <td>
@@ -52,7 +55,7 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
       </td>
       <td>{data.username}</td>
       <td>{data.age !== undefined ? data.age : "N/A"}</td>
-      <td>{data.email ? data.email : "N/A"}</td>
+      {/* <td>{data.email ? data.email : "N/A"}</td> */}
       <td>{data.registrationDate ? data.registrationDate : "N/A"}</td>
       <td>{data.gender ? data.gender : "N/A"}</td>
       <td>{data.compatCount !== undefined ? data.compatCount : 0}</td>
@@ -62,9 +65,9 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
       {/* Coloana pentru lastTimeActive */}
       <td>{lastActiveDisplay}</td>
       <td>
-        {data.isActivated
-          ? translatedTexts.contActivText1
-          : translatedTexts.contActivText2}
+        {data.subscriptionActive
+          ? "Are abonament"
+          : "Nu Are abonament"}
       </td>
       <td>
         <button

@@ -7,11 +7,12 @@ import AlertBox from "@/components/uiElements/AlertBox";
 
 export default function PrivacySettings({ activeTab, translatedTexts }) {
   const { userData, setUserData } = useAuth();
-  // Valorile implicite sunt true, astfel încât lipsa proprietății să fie tratată ca true.
+  // Valorile implicite sunt true
   const [settings, setSettings] = useState({
     showAge: true,
     emailCompatibility: true,
     emailPromotions: true,
+    emailChatNotifications: true, // noua proprietate
   });
   const [loading, setLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState({
@@ -23,7 +24,6 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
   useEffect(() => {
     if (userData) {
       if (userData.privacySettings) {
-        // Dacă proprietatea există, folosim valoarea salvată, iar pentru cele lipsă, setăm true.
         setSettings({
           showAge:
             userData.privacySettings.showAge !== undefined
@@ -37,13 +37,17 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
             userData.privacySettings.emailPromotions !== undefined
               ? userData.privacySettings.emailPromotions
               : true,
+          emailChatNotifications:
+            userData.privacySettings.emailChatNotifications !== undefined
+              ? userData.privacySettings.emailChatNotifications
+              : true,
         });
       } else {
-        // Dacă nu există deloc setările, le setăm pe toate la true
         setSettings({
           showAge: true,
           emailCompatibility: true,
           emailPromotions: true,
+          emailChatNotifications: true,
         });
       }
     }
@@ -64,7 +68,6 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
       setUserData((prev) => ({ ...prev, privacySettings: settings }));
       setAlertMessage({
         type: "success",
-        // Proprietate de traducere: settingsUpdated
         content:
           translatedTexts?.settingsUpdated ||
           "Setările au fost actualizate cu succes.",
@@ -73,7 +76,6 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
     } catch (error) {
       setAlertMessage({
         type: "danger",
-        // Proprietate de traducere: settingsUpdateError
         content:
           error.message ||
           translatedTexts?.settingsUpdateError ||
@@ -89,7 +91,6 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
       <div className="privacy-settings-container">
         <form onSubmit={handleSubmit} className="privacy-settings-form">
           <h2 className="mb-10">
-            {/* Proprietate de traducere: privacySettingsTitle */}
             {translatedTexts?.privacySettingsTitle || "Setări de confidențialitate"}
           </h2>
 
@@ -101,7 +102,6 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
                 checked={settings.showAge}
                 onChange={handleChange}
               />
-              {/* Proprietate de traducere: displayAge */}
               {translatedTexts?.displayAge || "Afișare vârstă"}
             </label>
           </div>
@@ -114,9 +114,7 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
                 checked={settings.emailCompatibility}
                 onChange={handleChange}
               />
-              {/* Proprietate de traducere: emailCompatibility */}
-              {translatedTexts?.emailCompatibility ||
-                "Notificări email privind compatibilități"}
+              {translatedTexts?.emailCompatibility || "Notificări email privind compatibilități"}
             </label>
           </div>
 
@@ -128,9 +126,21 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
                 checked={settings.emailPromotions}
                 onChange={handleChange}
               />
-              {/* Proprietate de traducere: emailPromotions */}
-              {translatedTexts?.emailPromotions ||
-                "Notificări email privind promoții"}
+              {translatedTexts?.emailPromotions || "Notificări email privind promoții"}
+            </label>
+          </div>
+
+          {/* Noua opțiune pentru notificări email privind mesaje noi */}
+          <div className="form-group mt-10">
+            <label>
+              <input
+                type="checkbox"
+                name="emailChatNotifications"
+                checked={settings.emailChatNotifications}
+                onChange={handleChange}
+              />
+              {translatedTexts?.emailChatNotifications ||
+                "Notificări email pentru mesaje noi"}
             </label>
           </div>
 
@@ -141,7 +151,6 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
               </div>
             ) : (
               <button type="submit" className="button -md -purple-1 text-white">
-                {/* Proprietate de traducere: saveSettings */}
                 {translatedTexts?.saveSettings || "Salvează setările"}
               </button>
             )}

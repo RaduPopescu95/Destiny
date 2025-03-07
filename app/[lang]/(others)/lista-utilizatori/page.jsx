@@ -39,7 +39,7 @@ export default async function page({ params }) {
       "Data înregistrării",
       targetLanguage
     ),
-    contActivText: await fetchTranslation("Status cont", targetLanguage),
+    contActivText: await fetchTranslation("Abonament", targetLanguage),
     contActivText1: await fetchTranslation("Cont activat", targetLanguage),
     contActivText2: await fetchTranslation("Cont neactivat", targetLanguage),
     veziDetaliiText: await fetchTranslation("Vezi Detalii", targetLanguage),

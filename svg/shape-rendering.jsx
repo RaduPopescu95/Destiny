@@ -13,14 +13,14 @@ const ShapeRendering = () => {
       <defs>
         <path
           id="gentle-wave"
-          d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
+          d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
         />
       </defs>
       <g className="svg-waves__parallax">
-        <use xlinkHref="/#gentle-wave" x="48" y="0" />
-        <use xlinkHref="/#gentle-wave" x="48" y="3" />
-        <use xlinkHref="/#gentle-wave" x="48" y="5" />
-        <use xlinkHref="/#gentle-wave" x="48" y="7" />
+        <use xlinkHref="#gentle-wave" x="48" y="0" fill="#fefbf4" opacity="0.8" />
+        <use xlinkHref="#gentle-wave" x="48" y="3" fill="#fefbf4" opacity="0.6" />
+        <use xlinkHref="#gentle-wave" x="48" y="5" fill="#fefbf4" opacity="0.4" />
+        <use xlinkHref="#gentle-wave" x="48" y="7" fill="#fefbf4" opacity="0.2" />
       </g>
     </svg>
   );

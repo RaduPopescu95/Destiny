@@ -87,27 +87,53 @@ export default function ListCompatibilitati({
       const compatRefUser2 = collection(db, "Users", data.id, "Compatibilitati");
   
       if (isCompatible) {
+        // Dacă compatibilitatea există, caută documentele și șterge-le
+        
+        // Ștergem din colecția utilizatorului curent
+        const q1 = query(compatRefUser1, where("compatibleUserId", "==", data.id));
+        const snapshot1 = await getDocs(q1);
+        snapshot1.forEach(async (docSnap) => {
+          await deleteDoc(doc(db, "Users", userUid, "Compatibilitati", docSnap.id));
+        });
+        
+        // Ștergem și din colecția celuilalt utilizator
+        // Atenție: Dacă la adăugare folosești același câmp "compatibleUserId",
+        // asigură-te că interogarea se face corect; în unele cazuri poate fi necesar să folosești userUid.
+        const q2 = query(compatRefUser2, where("compatibleUserId", "==", userUid));
+        const snapshot2 = await getDocs(q2);
+        snapshot2.forEach(async (docSnap) => {
+          await deleteDoc(doc(db, "Users", data.id, "Compatibilitati", docSnap.id));
+        });
+        
+        setIsCompatible(false);
         return;
       } else {
         const compatibilityDescription =
           data.compatibility.details.compatibilityDescription;
         const compatibilityScore = data.compatibility.compatibilityScore;
   
-        const newData = {
+        const newDataForUser1 = {
           compatibleUserId: data.id,
           markedAt: new Date(),
           compatibilityDescription,
           compatibilityScore,
+          ...(autoMark && { auto: true })
         };
-  
-        if (autoMark) newData.auto = true;
-  
-        const docRefUser1 = await addDoc(compatRefUser1, newData);
+        
+        const newDataForUser2 = {
+          compatibleUserId: userUid, // aici setăm partenerul ca fiind contul curent
+          markedAt: new Date(),
+          compatibilityDescription,
+          compatibilityScore,
+          ...(autoMark && { auto: true })
+        };
+        
+        const docRefUser1 = await addDoc(compatRefUser1, newDataForUser1);
         await updateDoc(docRefUser1, { documentId: docRefUser1.id });
-  
-        const docRefUser2 = await addDoc(compatRefUser2, newData);
+        
+        const docRefUser2 = await addDoc(compatRefUser2, newDataForUser2);
         await updateDoc(docRefUser2, { documentId: docRefUser2.id });
-  
+        
         setIsCompatible(true);
       }
     } catch (error) {

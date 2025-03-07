@@ -1,4 +1,5 @@
-"use client";
+"use client"
+
 import React, { useEffect, useState } from "react";
 import { db } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
@@ -13,8 +14,13 @@ export default function MyCourses({ translatedTexts }) {
   const [usersPerPage] = useState(5);
 
   // Stări pentru filtrare și sortare
+  const [filterSubscription, setFilterSubscription] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterNoCompat, setFilterNoCompat] = useState(false);
+  const [filterOldCompat, setFilterOldCompat] = useState(false); // noul filtru pentru compatibilitate veche
+  const [filterHasImages, setFilterHasImages] = useState(false); // noul filtru pentru a afișa doar utilizatorii cu imagini
+  const oldThresholdDays = 3; // prag de 3 zile
+
   const [sortOrder, setSortOrder] = useState(null); // pentru compatCount
   const [sortAgeOrder, setSortAgeOrder] = useState(null); // pentru age
   const [sortChatOrder, setSortChatOrder] = useState(null); // pentru chatCount
@@ -92,7 +98,11 @@ export default function MyCourses({ translatedTexts }) {
 
         const usersList = await Promise.all(
           userSnapshot.docs.map(async (docSnap) => {
-            let userData = { id: docSnap.id, ...docSnap.data() };
+            const data = docSnap.data();
+            // Dacă utilizatorul nu are răspunsuri, returnează null
+            if (!data.responses) return null;
+
+            let userData = { id: docSnap.id, ...data };
 
             // Compatibilități
             const compatCollection = collection(db, "Users", docSnap.id, "Compatibilitati");
@@ -121,15 +131,18 @@ export default function MyCourses({ translatedTexts }) {
           })
         );
 
+        // Eliminăm eventualele null (utilizatori fără .responses)
+        const validUsersList = usersList.filter((user) => user !== null);
+
         // Sortare implicită după "registrationDate"
-        usersList.sort((a, b) => {
+        validUsersList.sort((a, b) => {
           const dateA = new Date(a.registrationDate?.split("-").reverse().join("-"));
           const dateB = new Date(b.registrationDate?.split("-").reverse().join("-"));
           return dateB - dateA;
         });
 
-        setUsers(usersList);
-        setFilteredUsers(usersList);
+        setUsers(validUsersList);
+        setFilteredUsers(validUsersList);
       } catch (error) {
         console.error("Error fetching users: ", error);
       }
@@ -143,8 +156,25 @@ export default function MyCourses({ translatedTexts }) {
       const matchesSearch = user.username?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCompatFilter = !filterNoCompat || (filterNoCompat && !user.hasCompatibilitati);
       const matchesGender = genderFilter === "all" || user.gender?.toLowerCase() === genderFilter;
-      return matchesSearch && matchesCompatFilter && matchesGender;
+      const matchesSubscription = !filterSubscription || (filterSubscription && user.subscriptionActive);
+
+      return matchesSearch && matchesCompatFilter && matchesGender && matchesSubscription;
     });
+
+    // Filtru suplimentar: utilizatorii care nu au primit compatibilități de mult timp
+    if (filterOldCompat) {
+      const now = new Date();
+      filtered = filtered.filter((user) => {
+        if (!user.lastCompatibility) return true;
+        const daysSinceLast = (now - new Date(user.lastCompatibility)) / (1000 * 60 * 60 * 24);
+        return daysSinceLast >= oldThresholdDays;
+      });
+    }
+
+    // Noul filtru: afișează doar utilizatorii care au imagini (dacă e activat)
+    if (filterHasImages) {
+      filtered = filtered.filter((user) => user.images && Array.isArray(user.images) && user.images.length > 0);
+    }
 
     // Sortare cu prioritate: ultima compatibilitate, lastTimeActive, chatCount, age, compatCount
     if (sortLastCompatOrder) {
@@ -155,11 +185,20 @@ export default function MyCourses({ translatedTexts }) {
       });
     } else if (sortLastActiveOrder) {
       filtered = filtered.sort((a, b) => {
-        const dateA = new Date(a.lastTimeActive);
-        const dateB = new Date(b.lastTimeActive);
-        return sortLastActiveOrder === "asc" ? dateA - dateB : dateB - dateA;
+        const aTime = a.lastTimeActive 
+          ? (typeof a.lastTimeActive.toDate === "function" 
+              ? a.lastTimeActive.toDate().getTime() 
+              : new Date(a.lastTimeActive).getTime())
+          : 0;
+        const bTime = b.lastTimeActive 
+          ? (typeof b.lastTimeActive.toDate === "function" 
+              ? b.lastTimeActive.toDate().getTime() 
+              : new Date(b.lastTimeActive).getTime())
+          : 0;
+        return sortLastActiveOrder === "asc" ? aTime - bTime : bTime - aTime;
       });
-    } else if (sortChatOrder) {
+    }
+     else if (sortChatOrder) {
       filtered = filtered.sort((a, b) =>
         sortChatOrder === "asc" ? a.chatCount - b.chatCount : b.chatCount - a.chatCount
       );
@@ -181,10 +220,13 @@ export default function MyCourses({ translatedTexts }) {
     filterNoCompat,
     genderFilter,
     sortOrder,
+    filterSubscription,
     sortAgeOrder,
     sortChatOrder,
     sortLastActiveOrder,
     sortLastCompatOrder,
+    filterOldCompat,
+    filterHasImages, // adăugăm noua dependență pentru filtrul de imagini
   ]);
 
   // 3. Paginare
@@ -233,6 +275,38 @@ export default function MyCourses({ translatedTexts }) {
               {translatedTexts.filterNoCompatText || "Fără compatibilități"}
             </label>
           </div>
+          <div className="col-auto">
+            <label>
+              <input
+                type="checkbox"
+                checked={filterSubscription}
+                onChange={() => setFilterSubscription(!filterSubscription)}
+              />
+              {translatedTexts.filterSubscriptionText || "Doar utilizatori cu abonament"}
+            </label>
+          </div>
+          {/* Checkbox pentru utilizatorii cu compatibilitate veche */}
+          <div className="col-auto">
+            <label>
+              <input
+                type="checkbox"
+                checked={filterOldCompat}
+                onChange={() => setFilterOldCompat(!filterOldCompat)}
+              />
+              {translatedTexts.filterOldCompatText || "Compatibilitate veche (>=3 zile)"}
+            </label>
+          </div>
+          {/* Noua opțiune: filtrează doar utilizatorii care au imagini */}
+          <div className="col-auto">
+            <label>
+              <input
+                type="checkbox"
+                checked={filterHasImages}
+                onChange={() => setFilterHasImages(!filterHasImages)}
+              />
+              {translatedTexts.filterHasImagesText || "Doar utilizatori cu imagini"}
+            </label>
+          </div>
         </div>
 
         {/* Afișare utilizatori în tabel */}
@@ -245,7 +319,6 @@ export default function MyCourses({ translatedTexts }) {
                 <th onClick={handleSortByAge} style={{ cursor: "pointer" }}>
                   Varsta {sortAgeOrder === "asc" ? "↑" : sortAgeOrder === "desc" ? "↓" : ""}
                 </th>
-                <th>{translatedTexts.emailText || "Email"}</th>
                 <th>{translatedTexts.registrationDateText || "Data Înregistrare"}</th>
                 <th>{translatedTexts.genText || "Gen"}</th>
                 <th onClick={handleSortByCompatCount} style={{ cursor: "pointer" }}>
@@ -255,7 +328,6 @@ export default function MyCourses({ translatedTexts }) {
                 <th onClick={handleSortByChatCount} style={{ cursor: "pointer" }}>
                   Chats {sortChatOrder === "asc" ? " ↑" : sortChatOrder === "desc" ? " ↓" : ""}
                 </th>
-                {/* Noua coloană pentru ultima compatibilitate */}
                 <th onClick={handleSortByLastCompat} style={{ cursor: "pointer" }}>
                   Ultima Compatibilitate{" "}
                   {sortLastCompatOrder === "asc" ? "↑" : sortLastCompatOrder === "desc" ? "↓" : ""}

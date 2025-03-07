@@ -78,15 +78,15 @@ export default function Menu({
                 {translatedLinks.acasaText}
               </Link>
             </li>
-            {/* <li className="menu-item-has-children">
+            <li className="menu-item-has-children">
               <Link
                 data-barba
                 href="/subscriptions"
-                className={menuItem == "Home" ? "activeMenu" : ""}
+                className={menuItem == "subscriptions" ? "activeMenu" : ""}
               >
                Abonamente
               </Link>
-            </li> */}
+            </li>
 
             {/* <li className="menu-item-has-children">
               <Link

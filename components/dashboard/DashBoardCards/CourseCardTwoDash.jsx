@@ -34,7 +34,7 @@ export default function CourseCardTwoDash({
                 isFreeCard ? "blurred" : ""
               }`}
               style={{ position: "relative", aspectRatio: "16/9" }}
-            >
+          >
               {mainImage ? (
                 <Image
                   src={mainImage}
@@ -47,11 +47,11 @@ export default function CourseCardTwoDash({
                 <FontAwesomeIcon icon={faUserCircle} size="4x" className="text-muted" />
               )}
               {/* Mesaj de upgrade pentru cardurile free */}
-              {isFreeCard && (
+              {/* {isFreeCard && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white text-lg font-bold">
                   Upgrade pentru acces complet
                 </div>
-              )}
+              )} */}
             </div>
           </div>
 

@@ -290,7 +290,7 @@ const SignUpForm = ({
         content: translatedLinks.utilizatorInregistrat,
         showAlert: true,
       });
-      router.push("/login");
+      router.push("/quiz");
     } catch (err) {
       setAlertMessage({
         type: "danger",

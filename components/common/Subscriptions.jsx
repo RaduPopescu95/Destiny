@@ -118,9 +118,13 @@ export default function Subscriptions({
   //     </div>
   //   );
   // }
-
+if(userData?.subscriptionActive)
+{
+  return null
+}
   return (
     <section className="layout-pt-lg pt-40 layout-pb-md">
+ 
       <div className="container">
         <div className="row justify-center text-center">
           <div className="col-auto">
@@ -128,8 +132,7 @@ export default function Subscriptions({
               <h2 className="sectionTitle__title mb-10">
                 {translatedLinks.bookingTextPrim}
               </h2>
-              {/* <h3>{bookingText}</h3>
-              <h3>{translatedLinks.bookingText2}</h3> */}
+              <p>{translatedLinks.bookingText2}</p>
             </div>
           </div>
         </div>
@@ -231,21 +234,26 @@ export default function Subscriptions({
                   5 Euro / {translatedLinks.monthText}
                 </div>
 
-                {/* <Image
+                <Image
                   width={90}
                   height={90}
                   className="mt-30"
                   src="/assets/img/pricing/1.svg"
                   alt="icon"
-                /> */}
+                />
                        <div className="text-left y-gap-15 mt-35">
+                       <div>
+    <i className="text-purple-1 fa fa-check pr-8"></i>
+    Prioritate în afișarea profilului tău
+  </div>
   <div>
     <i className="text-purple-1 fa fa-check pr-8"></i>
     Acces nelimitat la compatibilități zilnice și lunare
   </div>
+
   <div>
     <i className="text-purple-1 fa fa-check pr-8"></i>
-    Prioritate în afișarea profilului tău
+    Posibilitatea de a vedea cine ți-a vizualizat profilul
   </div>
   <div>
     <i className="text-purple-1 fa fa-check pr-8"></i>
@@ -258,6 +266,14 @@ export default function Subscriptions({
   <div>
     <i className="text-purple-1 fa fa-check pr-8"></i>
     Notificări pentru compatibilitati noi
+  </div>
+  <div>
+    <i className="text-purple-1 fa fa-check pr-8"></i>
+    Acces exclusiv la sugestii personalizate de compatibilitate
+  </div>
+  <div>
+    <i className="text-purple-1 fa fa-check pr-8"></i>
+    Insignă specială de utilizator premium
   </div>
 </div>
 
@@ -287,7 +303,7 @@ export default function Subscriptions({
                       className="button px-40 py-20 fw-500 -purple-1"
                       onClick={() =>
                         initiateCheckout(
-                          "price_1Qs1huClBW08h64jHuznJrPk",
+                          "price_1R00DkClBW08h64jdSd6WWkE",
                           0,
                           translatedLinks.abonament3
                         )
@@ -303,7 +319,7 @@ export default function Subscriptions({
 
      
           {/* Card 3 - Pro Plan */}
-          <div className="col-lg-5 col-md-6">
+          {/* <div className="col-lg-5 col-md-6">
             <div className="priceCard -type-1 rounded-16 bg-white shadow-2">
               <div className="priceCard__content py-45 px-60 xl:px-40 text-center">
                 <div className="priceCard__type text-18 lh-11 fw-500 text-dark-1">
@@ -313,13 +329,13 @@ export default function Subscriptions({
                 3,75 Euro / {translatedLinks.monthText}
                 </div>
 
-                {/* <Image
+                <Image
                   width={90}
                   height={90}
                   className="mt-30"
                   src="/assets/img/pricing/2.svg"
                   alt="icon"
-                /> */}
+                />
             <div className="text-left y-gap-15 mt-35">
   <div>
     <i className="text-purple-1 fa fa-check pr-8"></i>
@@ -381,7 +397,7 @@ export default function Subscriptions({
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

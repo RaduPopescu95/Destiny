@@ -177,7 +177,7 @@ export default function SubscriptionsProfile({ activeTab, translatedTexts }) {
 
   return (
     <div
-      className={`tabs__pane -tab-item-4 ${activeTab == 4 ? "is-active" : ""}`}
+      className={`tabs__pane -tab-item-4 ${activeTab == 5 ? "is-active" : ""}`}
     >
       <form className="contact-form">
         <div className="row">

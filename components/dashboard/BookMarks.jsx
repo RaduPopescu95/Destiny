@@ -13,7 +13,8 @@ export default function BookMarks({ translatedTexts }) {
   const [compatibleUsers, setCompatibleUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage] = useState(5);
+  const [usersPerPage] = useState(10);
+
 
   // Determină dacă utilizatorul este abonat
   let isSubscribed =
@@ -34,16 +35,18 @@ export default function BookMarks({ translatedTexts }) {
         );
         const compatibilitatiSnapshot = await getDocs(compatibilitatiRef);
 
-        // Mapăm documentele din "Compatibilitati" cu toate câmpurile (inclusiv compatibilityScore)
+        // Mapăm documentele din "Compatibilitati" cu toate câmpurile
         const compatibilityDocs = compatibilitatiSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
 
-        // Pentru fiecare document, obținem și datele utilizatorului compatibil din colecția "Users"
+        // Pentru fiecare document, obținem datele utilizatorului compatibil,
+        // dar excludem cazul în care compatibleUserId === userData.uid (contul propriu)
         const usersData = await Promise.all(
           compatibilityDocs.map(async (compDoc) => {
             const userId = compDoc.compatibleUserId;
+            if (userId === userData.uid) return null; // Exclud contul propriu
             const userDocRef = doc(db, "Users", userId);
             const userSnapshot = await getDoc(userDocRef);
             return {
@@ -56,8 +59,11 @@ export default function BookMarks({ translatedTexts }) {
           })
         );
 
+        // Eliminăm eventualele null rezultate din compatibilitățile proprii
+        const validUsersData = usersData.filter((user) => user !== null);
+
         // Sortează utilizatorii descrescător după compatibilityScore
-        const sortedUsersData = usersData.sort(
+        const sortedUsersData = validUsersData.sort(
           (a, b) => b.compatibilityScore - a.compatibilityScore
         );
 
@@ -74,7 +80,8 @@ export default function BookMarks({ translatedTexts }) {
   // Paginare
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  // const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const currentUsers = filteredUsers;
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -92,28 +99,30 @@ export default function BookMarks({ translatedTexts }) {
             <div className="rounded-16 bg-white -dark-bg-dark-1 shadow-4 h-100">
               <div className="py-30 px-30">
                 <div className="row y-gap-30">
-                  {currentUsers.length > 0 ? (
-                    currentUsers.map((user, index) => (
-                      <CourseCardTwoDash
-                        key={user.id}
-                        data={user}
-                        translatedTexts={translatedTexts}
-                        compatibilityScore={user.compatibilityScore}
-                        // Dacă nu este abonat, doar primul card va fi afișat normal
-                        // iar restul vor fi marcate ca "blurate"
-                        isFreeCard={!isSubscribed && index > 0}
-                      />
-                    ))
-                  ) : (
-                    <div className="col-12 text-center">
-                      <p>
-                      {translatedTexts.bookmarksText2} 
-                    </p>
-                    </div>
-                  )}
+                {currentUsers.length > 0 ? (
+  currentUsers.map((user, index) => {
+    const globalIndex = indexOfFirstUser + index;
+    return (
+      <CourseCardTwoDash
+        key={`${user.compatibilityId}-${user.id}`}
+        data={user}
+        translatedTexts={translatedTexts}
+        compatibilityScore={user.compatibilityScore}
+        // Pentru utilizatorii neabonați, primele 5 compatibilități (globalIndex < 5) vor fi afișate normal,
+        // iar restul vor fi blurrate
+        isFreeCard={!isSubscribed && globalIndex >= 5}
+      />
+    );
+  })
+) : (
+  <div className="col-12 text-center">
+    <p>{translatedTexts.bookmarksText2}</p>
+  </div>
+)}
+
                 </div>
 
-                {currentUsers.length > 0 && (
+                {/* {currentUsers.length > 0 && (
                   <div className="row justify-center pt-30">
                     <div className="col-auto">
                       <Pagination
@@ -124,7 +133,7 @@ export default function BookMarks({ translatedTexts }) {
                       />
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           </div>

@@ -71,12 +71,34 @@ export default function HeaderDashboard({
     }
   };
 
+  // useEffect(() => {
+  //   if (window.innerWidth < 990) {
+  //     document
+  //       .getElementById("dashboardOpenClose")
+  //       .classList.add("-is-sidebar-hidden");
+  //   }
+  //   const handleResize = () => {
+  //     if (window.innerWidth < 990) {
+  //       document
+  //         .getElementById("dashboardOpenClose")
+  //         .classList.add("-is-sidebar-hidden");
+  //     }
+  //   };
+
+  //   window.addEventListener("resize", handleResize);
+
+  //   return () => {
+  //     window.removeEventListener("resize", handleResize);
+  //   };
+  // }, []);
+
   useEffect(() => {
-    if (window.innerWidth < 990) {
-      document
-        .getElementById("dashboardOpenClose")
-        .classList.add("-is-sidebar-hidden");
-    }
+    // Ascunde sidebar-ul implicit la încărcare
+    document
+      .getElementById("dashboardOpenClose")
+      .classList.add("-is-sidebar-hidden");
+  
+    // Păstrează și efectul existent pentru responsive
     const handleResize = () => {
       if (window.innerWidth < 990) {
         document
@@ -84,14 +106,14 @@ export default function HeaderDashboard({
           .classList.add("-is-sidebar-hidden");
       }
     };
-
+  
     window.addEventListener("resize", handleResize);
-
+  
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
+  
   return (
     <>
       <header className="header -dashboard -dark-bg-dark-1 js-header">
@@ -145,14 +167,14 @@ export default function HeaderDashboard({
                         Acasă
                       </Link>
                     </div>
-                    {/* <div className="d-flex items-center text-14 text-dark-1 ml-20">
+                    <div className="d-flex items-center text-14 text-dark-1 ml-20">
                       <Link
                         href="/subscriptions"
                         className="d-block text-dark-1"
                       >
                    Abonamente
                       </Link>
-                    </div> */}
+                    </div>
                     {/* <div className="d-flex items-center text-14 text-dark-1 ml-20">
                       <Link
                         href="https://real-amor.com/"

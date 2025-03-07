@@ -155,11 +155,7 @@ export default function Settings({ translatedTexts }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Funcție de calculare a compatibilității conform noilor reguli
-  // Presupunem că răspunsurile pentru întrebările din "firstQuestions" sunt:
-  //  [0]: "Care este zodia ta?" (astrologie)
-  //  [1]: "Care este data ta de naștere? (Format: ZZ/LL/AAAA)" (numerologie)
-  //  [2]: "Ce tip de relație cauți?" (filtrare după tipul de relație)
+
   const calculateCompatibility = (userResponses) => {
     const currentResponses = currentUserResponses || {};
 
