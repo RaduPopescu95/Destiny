@@ -142,41 +142,41 @@ export default function ListCompatibilitati({
   };
   
 
-  // useEffect(() => {
-  //   const autoMark = async () => {
-  //     // Verificare: dacă se compară cu propriul cont, nu face nimic
-  //     if (data.id === userUid) return;
+  useEffect(() => {
+    const autoMark = async () => {
+      // Verificare: dacă se compară cu propriul cont, nu face nimic
+      if (data.id === userUid) return;
       
-  //     if (autoMarkDone.current) return;
-  //     if (
-  //       !isCompatible &&
-  //       data.compatibility &&
-  //       data.compatibility.compatibilityScore >= 80 &&
-  //       currentUserRelation
-  //     ) {
-  //       let eligible = false;
-  //       if (currentUserRelation === "Prietenie") {
-  //         eligible = true;
-  //       } else if (
-  //         (currentUserRelation === "Relație de lungă durată" ||
-  //           currentUserRelation === "Relație casual") &&
-  //         currentUserGender &&
-  //         data.gender &&
-  //         currentUserGender !== data.gender
-  //       ) {
-  //         eligible = true;
-  //       }
-  //       if (!eligible) return;
+      if (autoMarkDone.current) return;
+      if (
+        !isCompatible &&
+        data.compatibility &&
+        data.compatibility.compatibilityScore >= 80 &&
+        currentUserRelation
+      ) {
+        let eligible = false;
+        if (currentUserRelation === "Prietenie") {
+          eligible = true;
+        } else if (
+          (currentUserRelation === "Relație de lungă durată" ||
+            currentUserRelation === "Relație casual") &&
+          currentUserGender &&
+          data.gender &&
+          currentUserGender !== data.gender
+        ) {
+          eligible = true;
+        }
+        if (!eligible) return;
   
-  //       // Folosim funcția registerAutoMark primită din părinte
-  //       if (registerAutoMark && registerAutoMark()) {
-  //         await handleToggleCompatibility(true);
-  //         autoMarkDone.current = true;
-  //       }
-  //     }
-  //   };
-  //   autoMark();
-  // }, [currentUserRelation, currentUserGender, data, isCompatible, index, registerAutoMark]);
+        // Folosim funcția registerAutoMark primită din părinte
+        if (registerAutoMark && registerAutoMark()) {
+          await handleToggleCompatibility(true);
+          autoMarkDone.current = true;
+        }
+      }
+    };
+    autoMark();
+  }, [currentUserRelation, currentUserGender, data, isCompatible, index, registerAutoMark]);
   
   const styles = StyleSheet.create({
     page: { padding: 30 },
