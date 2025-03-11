@@ -102,7 +102,7 @@ export default function PrivacySettings({ activeTab, translatedTexts }) {
                 checked={settings.showAge}
                 onChange={handleChange}
               />
-              {translatedTexts?.displayAge || "Afișare vârstă"}
+ranslatedTexts?.displayAge || "Afișare vârstă"}              {t
             </label>
           </div>
 

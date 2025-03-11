@@ -227,21 +227,24 @@ export default function EditProfile({
               value={userData?.gender || ""}
             />
           </div>
+{
+  userData?.showAge !== false &&
+  <div className="col-md-6">
+  <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
+    {translatedTexts.ageText}
+  </label>
+  <input
+    readOnly
+    required
+    type="text"
+    placeholder={translatedTexts.ageText}
+    value={userData?.age || ""}
+  />
+</div>
+}
+     
 
-          <div className="col-md-6">
-            <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
-              {translatedTexts.ageText}
-            </label>
-            <input
-              readOnly
-              required
-              type="text"
-              placeholder={translatedTexts.ageText}
-              value={userData?.age || ""}
-            />
-          </div>
-
-          <div className="col-md-6">
+          {/* <div className="col-md-6">
             <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
               {translatedTexts.emailText}
             </label>
@@ -252,7 +255,7 @@ export default function EditProfile({
               placeholder="Email"
               value={userData?.email || ""}
             />
-          </div>
+          </div> */}
           {/* <div className="col-md-12">
             <label className="text-16 lh-1 fw-500 text-dark-1 mb-10">
               {translatedTexts.scopText}
