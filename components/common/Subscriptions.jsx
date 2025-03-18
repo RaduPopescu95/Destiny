@@ -126,19 +126,19 @@ if(userData?.subscriptionActive)
     <section className="layout-pt-lg pt-40 layout-pb-md">
  
       <div className="container">
-        <div className="row justify-center text-center">
+        {/* <div className="row justify-center text-center">
           <div className="col-auto">
             <div className="sectionTitle ">
-              <h2 className="sectionTitle__title mb-10">
+              <h2 className="sectionTitle__title mb-0">
                 {translatedLinks.bookingTextPrim}
               </h2>
               <p>{translatedLinks.bookingText2}</p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Carduri de prețuri */}
-        <div className="row y-gap-30 justify-center pt-60 lg:pt-40">
+        <div className="row y-gap-30 justify-center pt-30 lg:pt-30">
           {/* Card 1 - Basic Plan */}
           {/* <div className="col-lg-4 col-md-6">
             <div className="priceCard -type-1 rounded-16 bg-white shadow-2">
@@ -287,9 +287,9 @@ if(userData?.subscriptionActive)
                     {acceptTermsText}
                   </label>
                 </div>
-
-                <div className="d-inline-block mt-30">
-                  {!isAccepted[0] && (
+        <div className="row y-gap-30 pt-30">
+                    <div className="col-sm-6">
+                    {!isAccepted[0] && (
                     <button
                       className="button px-40 py-20 fw-500 disabled-button"
                       disabled
@@ -297,8 +297,7 @@ if(userData?.subscriptionActive)
                       {getStarted}
                     </button>
                   )}
-
-                  {isAccepted[0] && (
+     {isAccepted[0] && (
                     <button
                       className="button px-40 py-20 fw-500 -purple-1"
                       onClick={() =>
@@ -312,6 +311,25 @@ if(userData?.subscriptionActive)
                       {getStarted}
                     </button>
                   )}
+                    </div>
+                    <div className="col-sm-6">
+                   
+              
+                    <button
+                      className="button px-40 py-20 fw-500 -purple-1"
+                      onClick={() =>
+                      {
+                        router.push("/profil-client")
+                      }
+                      }
+                    >
+                      {translatedLinks.profilText}
+                    </button>
+             
+                    </div>
+                  </div>
+                <div className="d-inline-block mt-30">
+            
                 </div>
               </div>
             </div>

@@ -13,6 +13,7 @@ export default async function Page({ params }) {
   console.log("targe lagn..", targetLanguage);
 
   const translatedLinks = {
+    profilText: await fetchTranslation("Profil", targetLanguage),
     home: await fetchTranslation("Acasa", targetLanguage),
     realAmor: await fetchTranslation("Destiny", targetLanguage),
     pricing: await fetchTranslation("Subscriptions", targetLanguage),

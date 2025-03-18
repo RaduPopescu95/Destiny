@@ -764,10 +764,12 @@ const displayOption = (option) => {
 
   if (quizFinished && isEditQuiz) {
     router.push("/profil-client");
+    router.push("/subscriptions");
   }
   if (quizFinished && !isEditQuiz) {
-    router.push("/pricing");
-    return <FinishedQuizComp translatedLinks={translatedLinks} />;
+    // router.push("/pricing");
+    router.push("/subscriptions");
+    // return <FinishedQuizComp translatedLinks={translatedLinks} />;
   }
 
   if (isRedirecting) {

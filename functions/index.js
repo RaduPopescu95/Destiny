@@ -253,7 +253,7 @@ exports.sendSubscriptionEmail = functions.firestore
 
 // === SEND MISSING RESPONSES REMINDER ===
 exports.sendMissingResponsesReminder = functions.pubsub
-    .schedule("*/5 * * * *") // Se execută zilnic la ora 9:00 AM
+    .schedule("0 9 */2 * *")// Se execută zilnic la ora 9:00 AM
     .onRun(async (context) => {
       try {
         const usersSnapshot = await db.collection("Users").get();
