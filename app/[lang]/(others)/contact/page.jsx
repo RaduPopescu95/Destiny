@@ -152,9 +152,9 @@ export default async function page({ params }) {
            translatedLinks={translatedLinks}/>
       <div className="content-wrapper js-content-wrapper overflow-hidden">
         <ContactOne />
-        <Faq />
+        {/* <Faq /> */}
 
-        <FooterOne />
+        {/* <FooterOne /> */}
       </div>
     </div>
   );
