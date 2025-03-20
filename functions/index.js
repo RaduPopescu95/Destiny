@@ -604,3 +604,135 @@ exports.sendUnseenMessagesReminder = functions.pubsub
         return null;
       }
     });
+
+
+// SUBSCRIPTIONS
+
+// Trimite email promoțional săptămânal (ex: în fiecare Luni la ora 12:00)
+exports.sendSubscriptionPromotionEmail = functions
+    .runWith({
+      timeoutSeconds: 300, // max 5 minute
+      memory: "512MB", // sau "1GB", "2GB" etc. dacă e nevoie
+    })
+    .pubsub
+    .schedule("0 12 * * 1") // format crontab: minute ora ziLuna luna ziSaptamana
+    .onRun(async (context) => {
+      try {
+      // 1) Obținem toți utilizatorii
+        const usersSnapshot = await db.collection("Users").get();
+        const allUsers = usersSnapshot.docs; // array de DocumentSnapshot
+
+        // 2) Definim mărimea unui "lot" (batch)
+        const BATCH_SIZE = 50;
+
+        // 3) Împărțim array-ul de useri în loturi
+        for (let i = 0; i < allUsers.length; i += BATCH_SIZE) {
+        // Luăm porțiunea i -> i + BATCH_SIZE
+          const batchDocs = allUsers.slice(i, i + BATCH_SIZE);
+
+          // Construim un array de promisiuni pentru emailuri
+          const batchPromises = batchDocs.map((userDoc) => {
+            const userData = userDoc.data();
+
+            // Sărim peste cei care au dezactivat promoțiile
+            if (
+              userData.privacySettings &&
+            userData.privacySettings.emailPromotions === false
+            ) {
+              console.log(
+                  `Skipping promo for ${userData.email} (promotions off).`,
+              );
+              return null; // nu facem nimic
+            }
+
+            // Trimitem doar la userii fără subscriptionActive
+            if (!userData.subscriptionActive) {
+              const email = userData.email;
+              if (!email) return null;
+
+              const username = userData.username || "Dragă utilizator";
+              const targetLanguage = userData.targetLanguage || "ro";
+
+              let emailSubject = "";
+              let emailMessage = "";
+
+              if (targetLanguage === "en") {
+                emailSubject = "Enjoy Premium Features for Only 5 EUR/Month!";
+                emailMessage = `
+Hello ${username},
+
+Did you know you can get much more out of Destiny with a Premium subscription for only 5 EUR/month? Unlock these exclusive benefits:
+
+• Priority visibility of your profile
+• Unlimited access to daily and monthly compatibilities
+• See who viewed your profile
+• Unlimited compatibility list
+• Advanced chat feature with unlimited messages
+• Notifications for new compatibilities
+• Exclusive access to personalized compatibility suggestions
+• Special badge for Premium users
+
+Upgrade now and enjoy a better, more personalized Destiny experience:
+https://www.ydestiny.com/subscriptions
+
+Best regards,
+The Destiny Team
+`;
+              } else {
+              // Implicit română
+                emailSubject = "Bucură-te de Funcții Premium cu doar 5 EUR/lună!";
+                emailMessage = `
+Salut ${username},
+
+Știai că poți beneficia mult mai mult de Destiny cu un abonament Premium la doar 5 EUR/lună? Vei avea acces la avantaje exclusive:
+
+• Prioritate în afișarea profilului tău
+• Acces nelimitat la compatibilități zilnice și lunare
+• Posibilitatea de a vedea cine ți-a vizualizat profilul
+• Listă nelimitată de compatibilități
+• Funcție de chat avansat cu mesaje nelimitate
+• Notificări pentru compatibilități noi
+• Acces exclusiv la sugestii personalizate de compatibilitate
+• Insignă specială de utilizator premium
+
+Abonează-te acum și bucură-te de o experiență Destiny mai completă și mai personalizată:
+https://www.ydestiny.com/subscriptions
+
+Toate cele bune,
+Echipa Destiny
+`;
+              }
+
+              // Construim mailOptions
+              const mailOptions = {
+                from: "contact@ydestiny.com",
+                to: email,
+                subject: emailSubject,
+                text: emailMessage,
+              };
+
+              // Returnăm promisiunea de trimitere
+              return transporter.sendMail(mailOptions).then(() => {
+                console.log(`Promo subscription email sent to: ${email}`);
+              }).catch((err) => {
+                console.error(
+                    `Error sending promo subscription email to ${email}:`, err,
+                );
+              });
+            } else {
+              return null;
+            }
+          });
+
+          // 4) Așteptăm finalizarea *lotului* curent
+          await Promise.all(batchPromises);
+
+          console.log(`Batch [${i}..${i + BATCH_SIZE - 1}] processed.`);
+        }
+
+        console.log("Subscription Promotion Email Batch Complete.");
+      } catch (error) {
+        console.error("Error in sendSubscriptionPromotionEmail:", error);
+      }
+      return null;
+    });

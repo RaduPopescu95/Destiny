@@ -175,6 +175,14 @@ export default function HeaderDashboard({
                    Abonamente
                       </Link>
                     </div>
+                    <div className="d-flex items-center text-14 text-dark-1 ml-20">
+                      <Link
+                        href="/contact"
+                        className="d-block text-dark-1"
+                      >
+                   Contact
+                      </Link>
+                    </div>
                     {/* <div className="d-flex items-center text-14 text-dark-1 ml-20">
                       <Link
                         href="https://real-amor.com/"

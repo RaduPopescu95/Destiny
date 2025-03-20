@@ -87,6 +87,15 @@ export default function Menu({
                Abonamente
               </Link>
             </li>
+            <li className="menu-item-has-children">
+              <Link
+                data-barba
+                href="/contact"
+                className={menuItem == "contact" ? "activeMenu" : ""}
+              >
+               Contact
+              </Link>
+            </li>
 
             {/* <li className="menu-item-has-children">
               <Link

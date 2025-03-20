@@ -111,6 +111,7 @@ export default function BookMarks({ translatedTexts }) {
         // Pentru utilizatorii neabonați, primele 5 compatibilități (globalIndex < 5) vor fi afișate normal,
         // iar restul vor fi blurrate
         isFreeCard={!isSubscribed && globalIndex >= 5}
+        premiumAccount= {userData?.subscriptionActive}
       />
     );
   })
