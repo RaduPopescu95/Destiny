@@ -38,14 +38,14 @@ export async function generateMetadata({ params }) {
       description,
       url: `${siteURL}/matrimoniale/${location}`,
       siteName: "Destiny",
-      images: [
-        {
-          url: `${siteURL}/images/default-og-image.jpg`,
-          width: 1200,
-          height: 630,
-          alt: `Matrimoniale ${location}`,
-        },
-      ],
+      // images: [
+      //   {
+      //     url: `${siteURL}/images/default-og-image.jpg`,
+      //     width: 1200,
+      //     height: 630,
+      //     alt: `Matrimoniale ${location}`,
+      //   },
+      // ],
       locale: "en_US",
       type: "website",
     },
@@ -54,7 +54,7 @@ export async function generateMetadata({ params }) {
       title: `Matrimoniale ${location} | Destiny`,
       description,
       site: "@Destiny",
-      images: [`${siteURL}/images/default-og-image.jpg`],
+      // images: [`${siteURL}/images/default-og-image.jpg`],
     },
   };
 }
