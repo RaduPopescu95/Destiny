@@ -335,7 +335,7 @@ export default function MyCourses({ translatedTexts }) {
                 <th onClick={handleSortByLastActive} style={{ cursor: "pointer" }}>
                   Last Active {sortLastActiveOrder === "asc" ? " ↑" : sortLastActiveOrder === "desc" ? " ↓" : ""}
                 </th>
-                <th>{translatedTexts.contActivText || "Status"}</th>
+                <th>Afisabil</th>
                 <th>{translatedTexts.actiuniText || "Acțiuni"}</th>
               </tr>
             </thead>

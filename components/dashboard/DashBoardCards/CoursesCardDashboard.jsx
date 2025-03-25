@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/firebase";
 
 export default function CoursesCardDashboard({ data, translatedTexts }) {
   const router = useRouter();
@@ -8,6 +10,18 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
   const handleCardClick = () => {
     console.log("User Data:", data);
     router.push(`/informatii-utilizator?uid=${data.id}`);
+  };
+
+  // Funcție pentru actualizarea câmpului afisabil în Firestore
+  const handleAfisabilChange = async (e) => {
+    const newValue = e.target.checked;
+    try {
+      const userDocRef = doc(db, "Users", data.id);
+      await updateDoc(userDocRef, { afisabil: newValue });
+      console.log("Updated afisabil to", newValue);
+    } catch (error) {
+      console.error("Error updating afisabil:", error);
+    }
   };
 
   // Conversie lastTimeActive la un format frumos
@@ -35,6 +49,7 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
       console.error("Eroare conversie lastCompatibility:", err);
     }
   }
+
   return (
     <tr style={{ cursor: "pointer" }}>
       <td>
@@ -65,9 +80,12 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
       {/* Coloana pentru lastTimeActive */}
       <td>{lastActiveDisplay}</td>
       <td>
-        {data.subscriptionActive
-          ? "Are abonament"
-          : "Nu Are abonament"}
+        <input
+          type="checkbox"
+          checked={data.afisabil || false}
+          onChange={handleAfisabilChange}
+          onClick={(e) => e.stopPropagation()}
+        />
       </td>
       <td>
         <button

@@ -89,21 +89,21 @@ export default function MobileMenu({
           </div>
         </div>
 
-        {/* {showMenu && activeMobileMenu && (
+        {showMenu && activeMobileMenu && (
           <div className="mobileMenu text-dark-1">
             <div className="submenuOne">
               <div className="title">
                 <Link
                   className={
-                    menuItem == "Real Amor" ? "activeMenu" : "inActiveMenu"
+                    menuItem == "contact" ? "activeMenu" : "inActiveMenu"
                   }
-                  href="https://real-amor.com/"
+                  href="/contact"
                 >
-                  Real Amor
+                  Contact
                 </Link>
               </div>
             </div>
-            <div className="submenuOne">
+            {/* <div className="submenuOne">
               <div className="title">
                 <Link
                   className={
@@ -126,9 +126,9 @@ export default function MobileMenu({
                   {methodeText}
                 </Link>
               </div>
-            </div>
+            </div> */}
           </div>
-        )} */}
+        )}
 
         {/* mobile footer start */}
         {/* <MobileFooter /> */}

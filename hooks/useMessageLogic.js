@@ -116,9 +116,15 @@ export function useMessageLogic() {
             };
           })
         );
-
+        const uniqueUsersWithLastMessage = usersWithLastMessage
+        .filter(Boolean)
+        .filter(
+          (user, index, self) =>
+            index === self.findIndex((u) => u.id === user.id)
+        );
+      
         // Sortează după timestamp
-        const sortedUsers = usersWithLastMessage
+        const sortedUsers = uniqueUsersWithLastMessage
           .filter(Boolean)
           .sort((a, b) => {
             if (a.lastMessageTimestamp && b.lastMessageTimestamp)

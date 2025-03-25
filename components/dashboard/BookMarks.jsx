@@ -15,13 +15,12 @@ export default function BookMarks({ translatedTexts }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
 
-
   // Determină dacă utilizatorul este abonat
   let isSubscribed =
     userData?.subscriptionActive ||
     userData?.subscriptionStatus === "canceledUntilEnd";
 
-  isSubscribed = true
+  isSubscribed = true;
 
   useEffect(() => {
     const fetchCompatibleUsers = async () => {
@@ -62,8 +61,14 @@ export default function BookMarks({ translatedTexts }) {
         // Eliminăm eventualele null rezultate din compatibilitățile proprii
         const validUsersData = usersData.filter((user) => user !== null);
 
+        // Elimină duplicatele: păstrează doar prima apariție pentru fiecare user.id
+        const uniqueUsersData = validUsersData.filter(
+          (user, index, self) =>
+            index === self.findIndex((u) => u.id === user.id)
+        );
+
         // Sortează utilizatorii descrescător după compatibilityScore
-        const sortedUsersData = validUsersData.sort(
+        const sortedUsersData = uniqueUsersData.sort(
           (a, b) => b.compatibilityScore - a.compatibilityScore
         );
 
@@ -90,7 +95,9 @@ export default function BookMarks({ translatedTexts }) {
       <div className="dashboard__content bg-light-4">
         <div className="row pb-50 mb-10">
           <div className="col-auto">
-            <h1 className="text-30 lh-12 fw-700">{translatedTexts.bookmarksText1}</h1>
+            <h1 className="text-30 lh-12 fw-700">
+              {translatedTexts.bookmarksText1}
+            </h1>
           </div>
         </div>
 
@@ -99,28 +106,27 @@ export default function BookMarks({ translatedTexts }) {
             <div className="rounded-16 bg-white -dark-bg-dark-1 shadow-4 h-100">
               <div className="py-30 px-30">
                 <div className="row y-gap-30">
-                {currentUsers.length > 0 ? (
-  currentUsers.map((user, index) => {
-    const globalIndex = indexOfFirstUser + index;
-    return (
-      <CourseCardTwoDash
-        key={`${user.compatibilityId}-${user.id}`}
-        data={user}
-        translatedTexts={translatedTexts}
-        compatibilityScore={user.compatibilityScore}
-        // Pentru utilizatorii neabonați, primele 5 compatibilități (globalIndex < 5) vor fi afișate normal,
-        // iar restul vor fi blurrate
-        isFreeCard={!isSubscribed && globalIndex >= 5}
-        premiumAccount= {userData?.subscriptionActive}
-      />
-    );
-  })
-) : (
-  <div className="col-12 text-center">
-    <p>{translatedTexts.bookmarksText2}</p>
-  </div>
-)}
-
+                  {currentUsers.length > 0 ? (
+                    currentUsers.map((user, index) => {
+                      const globalIndex = indexOfFirstUser + index;
+                      return (
+                        <CourseCardTwoDash
+                          key={`${user.compatibilityId}-${user.id}`}
+                          data={user}
+                          translatedTexts={translatedTexts}
+                          compatibilityScore={user.compatibilityScore}
+                          // Pentru utilizatorii neabonați, primele 5 compatibilități (globalIndex < 5)
+                          // vor fi afișate normal, iar restul vor fi blurrate
+                          isFreeCard={!isSubscribed && globalIndex >= 5}
+                          premiumAccount={userData?.subscriptionActive}
+                        />
+                      );
+                    })
+                  ) : (
+                    <div className="col-12 text-center">
+                      <p>{translatedTexts.bookmarksText2}</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* {currentUsers.length > 0 && (

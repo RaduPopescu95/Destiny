@@ -16414,3 +16414,17 @@ table.table td {
 }
 
 
+
+@media (max-width: 576px) {
+  .pt-90 {
+    padding-top: 120px !important;
+  }
+}
+
+
+.stud-image {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  object-position: center;
+}
