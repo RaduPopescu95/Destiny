@@ -15,11 +15,13 @@ import { AuthProvider } from "@/context/AuthContext";
 import Cookies from "js-cookie";
 import { GoogleTagManager } from "@next/third-parties/google";
 import LanguageModal from "@/components/common/LanguageModal";
+import FloatingChatButton from "@/components/contactSupport/FloatingChatButton ";
+import { fetchTranslation } from "@/utils/translationUtils";
 
 // Importă componenta noastră
 
 
-export default function RootLayout({ children }) {
+export default  function RootLayout({ children }) {
   const [lang, setLang] = useState("fr");
 
   useEffect(() => {
@@ -35,6 +37,8 @@ export default function RootLayout({ children }) {
     setLang(savedLocale);
   }, []);
 
+
+
   return (
     <html lang={lang}>
       <GoogleTagManager gtmId="G-RZ4DR59LZ5" />
@@ -43,7 +47,7 @@ export default function RootLayout({ children }) {
         <Context>
           <AuthProvider>
             {children}
-
+            <FloatingChatButton />
             {/* Afișăm modalul global, care apare la prima accesare */}
             <LanguageModal />
           </AuthProvider>

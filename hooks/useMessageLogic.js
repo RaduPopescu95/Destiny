@@ -12,6 +12,7 @@ import {
   onSnapshot,
   setDoc,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { query } from "firebase/database";
 
@@ -142,6 +143,61 @@ export function useMessageLogic() {
 
     fetchCompatibleUsers();
   }, [userData?.uid]);
+
+
+  const handleEditMessage = async (msg) => {
+    if (!msg || !selectedUser || !userData?.uid) return;
+    // Permitem editarea doar a mesajelor trimise de tine
+    if (msg.senderId !== userData.uid) return;
+  
+    // Afișăm un prompt pentru editare
+    const newContent = window.prompt("Editează mesajul:", msg.content);
+    if (newContent === null) return; // utilizatorul a anulat editarea
+    if (newContent.trim() === "") {
+      alert("Mesajul nu poate fi gol!");
+      return;
+    }
+  
+    // Determinăm cele două căi de chat
+    const chatPath1 = `${userData.uid}-${selectedUser.id}`;
+    const chatPath2 = `${selectedUser.id}-${userData.uid}`;
+  
+    try {
+      // Actualizăm mesajul în ambele colecții
+      await updateDoc(doc(db, "Chats", chatPath1, "Messages", msg.id), {
+        content: newContent,
+        edited: true, // opțional, un flag care indică că mesajul a fost editat
+        editedAt: new Date(), // data editării, dacă dorești
+      });
+      await updateDoc(doc(db, "Chats", chatPath2, "Messages", msg.id), {
+        content: newContent,
+        edited: true,
+        editedAt: new Date(),
+      });
+    } catch (error) {
+      console.error("Error editing message:", error);
+    }
+  };
+    // Funcția de ștergere a unui mesaj
+    const handleDeleteMessage = async (msg) => {
+      if (!msg || !selectedUser || !userData?.uid) return;
+      // Permitem ștergerea doar a mesajelor trimise de tine
+      if (msg.senderId !== userData.uid) return;
+      
+      if (!window.confirm("Esti sigur că vrei să ștergi acest mesaj?")) return;
+      
+      // Determinăm cele două căi de chat
+      const chatPath1 = `${userData.uid}-${selectedUser.id}`;
+      const chatPath2 = `${selectedUser.id}-${userData.uid}`;
+      
+      try {
+        // Ștergem mesajul din ambele subcolecții "Messages"
+        await deleteDoc(doc(db, "Chats", chatPath1, "Messages", msg.id));
+        await deleteDoc(doc(db, "Chats", chatPath2, "Messages", msg.id));
+      } catch (error) {
+        console.error("Error deleting message:", error);
+      }
+    };
 
   // Abonare la "Typing" pentru fiecare user din listă - să putem afișa "Typing..." în sidebar
   useEffect(() => {
@@ -379,5 +435,7 @@ const handleTyping = async () => {
     selectedUserOnline,
     typingStates, // pentru sidebar
     messagesEndRef,
+    handleDeleteMessage, // Adăugăm funcția în obiectul returnat
+    handleEditMessage, // adăugat aici
   };
 }

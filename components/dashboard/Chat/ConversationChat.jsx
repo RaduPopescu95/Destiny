@@ -25,13 +25,51 @@ export default function ConversationChat({
   messagesEndRef,
   isSubscribed,
   allowedConversation,
+  handleDeleteMessage,
+  handleEditMessage
 }) {
   // Stare pentru afișarea selectorului de emoji-uri
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
+  const [showScrollButton, setShowScrollButton] = useState(false);
   // Funcția care adaugă emoji-ul selectat la mesajul curent
+  const [editingMessage, setEditingMessage] = useState(null);
   const onEmojiClick = (emojiData, event) => {
     setNewMessage((prev) => prev + emojiData.emoji);
+  };
+
+   // Funcție pentru a verifica poziția de scroll
+   const handleScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    // Dacă nu e aproape de bottom (ex. 50px de diferență), afișează butonul
+    if (scrollHeight - scrollTop - clientHeight > 50) {
+      setShowScrollButton(true);
+    } else {
+      setShowScrollButton(false);
+    }
+  };
+
+   // Funcție pentru a scrolla la bottom
+   const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setShowScrollButton(false);
+  };
+
+  // Funcția care salvează editarea mesajului
+  const handleSaveEdit = async () => {
+    if (!editingMessage) return;
+    // Apelăm funcția de editare din hook cu noul conținut
+    await handleEditMessage({ ...editingMessage, content: newMessage });
+    // Resetăm starea de editare și câmpul de mesaj
+    setEditingMessage(null);
+    setNewMessage("");
+  };
+
+  // La dublu click pe mesajul tău, treci în modul de editare
+  const handleDoubleClick = (msg) => {
+    if (msg.senderId === userData?.uid) {
+      setEditingMessage(msg);
+      setNewMessage(msg.content);
+    }
   };
 
   return (
@@ -108,6 +146,13 @@ export default function ConversationChat({
                   ? "offset-xl-5 offset-lg-2 text-right"
                   : ""
               }`}
+              onDoubleClick={() => handleDoubleClick(msg)}
+                     onContextMenu={(e) => {
+                e.preventDefault(); // Previne meniul contextual implicit
+                if (msg.senderId === userData?.uid) {
+                  handleDeleteMessage(msg);
+                }
+              }}
             >
               <div
                 className={`d-flex items-center ${
@@ -191,7 +236,12 @@ export default function ConversationChat({
                     wordWrap: "break-word",
                   }}
                 >
-                  {msg?.content}
+                 {msg?.content}
+                  {msg?.edited && (
+                    <span style={{ fontStyle: "italic", fontSize: "0.8em", marginLeft: "8px" }}>
+                      (editat)
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -225,7 +275,25 @@ export default function ConversationChat({
 
           <div ref={messagesEndRef}></div>
         </div>
-
+{/* Butonul de scroll, afișat condițional */}
+{showScrollButton && (
+          <button
+            onClick={scrollToBottom}
+            style={{
+              position: "absolute",
+              bottom: 20,
+              right: 20,
+              padding: "10px 15px",
+              borderRadius: "5px",
+              border: "none",
+              backgroundColor: "#1d5f8a",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            Scroll to Bottom
+          </button>
+        )}
         {/* Overlay dacă nu ești abonat și nu e userul permis */}
         {selectedUser &&
           !isSubscribed &&
@@ -283,11 +351,11 @@ export default function ConversationChat({
             {showEmojiPicker && <EmojiPickerDesktop onEmojiClick={onEmojiClick} />}
           </div>
           <div className="col-auto">
-            <button
-              onClick={handleSendMessage}
+          <button
+              onClick={editingMessage ? handleSaveEdit : handleSendMessage}
               className="button -md -purple-1 text-white shrink-0"
             >
-              Trimite
+              {editingMessage ? "Salvează" : "Trimite"}
             </button>
           </div>
         </div>

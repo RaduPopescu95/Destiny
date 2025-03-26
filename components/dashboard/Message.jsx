@@ -26,7 +26,9 @@ export default function Message() {
     userData,
     selectedUserOnline,
     typingStates,
+    handleDeleteMessage,
     messagesEndRef,
+    handleEditMessage
   } = useMessageLogic();
 
   return (
@@ -60,6 +62,8 @@ export default function Message() {
               messagesEndRef={messagesEndRef}
               isSubscribed={isSubscribed}
               allowedConversation={allowedConversation}
+              handleDeleteMessage={handleDeleteMessage}
+              handleEditMessage={handleEditMessage}
             />
           </div>
         </div>
