@@ -13,6 +13,14 @@ export default function Students({ location, validUsers }) {
   // Folosim doar primii 10 itemi din datele statice
   const staticStudents = students.slice(0, 10);
 
+    // Funcție helper pentru a transforma prima literă din "location" în majusculă
+    const capitalizeFirstLetter = (str) => {
+      if (!str) return "";
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    };
+  
+    const formattedLocation = capitalizeFirstLetter(location);
+
   return (
     <section className="layout-pt-lg layout-pb-lg bg-light-4">
       <div className="container">
@@ -21,8 +29,11 @@ export default function Students({ location, validUsers }) {
           <div className="col-lg-6">
             <div className="sectionTitle">
               <h1 className="sectionTitle__title">
-                Matrimoniale {location && `${location}`}
+                Matrimoniale {formattedLocation && `${formattedLocation}`}
               </h1>
+              <p>
+                Matrimoniale și chat online cu persoane din {formattedLocation && `${formattedLocation}`}
+              </p>
             </div>
           </div>
           <div className="col-auto">
