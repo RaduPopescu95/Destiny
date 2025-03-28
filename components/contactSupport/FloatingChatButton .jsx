@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { FaComment, FaTimes } from "react-icons/fa";
@@ -13,7 +11,7 @@ const FloatingChatButton = () => {
   const params = useParams();
   const targetLanguage = params.lang || "ro";
 
-  // Stare pentru traduceri și UI
+  // Stări pentru traduceri și UI
   const [translations, setTranslations] = useState(null);
   const [showTooltip, setShowTooltip] = useState(true);
   const [showChat, setShowChat] = useState(false);
@@ -35,20 +33,35 @@ const FloatingChatButton = () => {
   useEffect(() => {
     const fetchTranslations = async () => {
       const t = {
-        chatTooltip: await fetchTranslation("Pentru orice probleme în folosirea aplicației, vă rugăm să ne contactați.", targetLanguage),
+        chatTooltip: await fetchTranslation(
+          "Pentru orice probleme în folosirea aplicației, vă rugăm să ne contactați.",
+          targetLanguage
+        ),
         chatHeader: await fetchTranslation("Suport Chat", targetLanguage),
         subjectPlaceholder: await fetchTranslation("Subiect", targetLanguage),
         emailPlaceholder: await fetchTranslation("Email", targetLanguage),
         messagePlaceholder: await fetchTranslation("Conținut mesaj", targetLanguage),
         submitButton: await fetchTranslation("Trimite", targetLanguage),
-        gdprPrefix: await fetchTranslation("Prin trimiterea mesajului, sunteți de acord cu prelucrarea datelor dumneavoastră conform ", targetLanguage),
+        gdprPrefix: await fetchTranslation(
+          "Prin trimiterea mesajului, sunteți de acord cu prelucrarea datelor dumneavoastră conform ",
+          targetLanguage
+        ),
         gdprPrivacyLink: await fetchTranslation("Politica de confidențialitate", targetLanguage),
         gdprCookiesLink: await fetchTranslation("Politica de cookie-uri", targetLanguage),
         gdprSuffix: await fetchTranslation(".", targetLanguage),
         emailError: await fetchTranslation("Vă rugăm să completați adresa de email.", targetLanguage),
         gdprError: await fetchTranslation("Trebuie să acceptați prelucrarea datelor conform GDPR.", targetLanguage),
         contactConfirmationEmail: await fetchTranslation("Vă vom contacta pe email.", targetLanguage),
-        errorSubmit: await fetchTranslation("A apărut o eroare. Încercați din nou.", targetLanguage)
+        errorSubmit: await fetchTranslation("A apărut o eroare. Încercați din nou.", targetLanguage),
+        // Mesaj informativ pentru WhatsApp
+        whatsappInfo: await fetchTranslation(
+          "Pentru mesajele trimise prin WhatsApp, răspundem de regulă de luni până vineri, între orele 08:00 și 16:00. În afara acestui interval, răspunsul poate fi întârziat.",
+          targetLanguage
+        ),
+        consentButtonDisabled: await fetchTranslation(
+          "Pentru a trimite mesajul este necesar să acceptați politicile noastre prin bifarea căsuței de mai sus.",
+          targetLanguage
+        ),
       };
       setTranslations(t);
     };
@@ -61,14 +74,15 @@ const FloatingChatButton = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Verificare GDPR (acordul este necesar pentru ambele metode)
+    if (!gdprConsent) {
+      setStatusMessage(translations.gdprError);
+      return;
+    }
+
     if (contactPreference === "email") {
-      // Validare pentru email și GDPR
       if (!email) {
         setStatusMessage(translations.emailError);
-        return;
-      }
-      if (!gdprConsent) {
-        setStatusMessage(translations.gdprError);
         return;
       }
       try {
@@ -78,7 +92,7 @@ const FloatingChatButton = () => {
           message,
           contactPreference: "email",
           gdprConsent,
-          timestamp: new Date(),
+          timestamp: new Date()
         });
         setStatusMessage(translations.contactConfirmationEmail);
         setSubject("");
@@ -94,13 +108,10 @@ const FloatingChatButton = () => {
         setStatusMessage(translations.errorSubmit);
       }
     } else if (contactPreference === "whatsapp") {
-      // Construim textul mesajului și URL-ul pentru WhatsApp
       const text = `Subiect: ${subject}\nMesaj: ${message}`;
       const encodedText = encodeURIComponent(text);
-      // Numărul în format internațional pentru România: 40750282034
-      const phone = "40750282034";
+      const phone = "40750282034"; // Format internațional pentru România
       const url = `https://wa.me/${phone}?text=${encodedText}`;
-      // Deschide conversația direct în WhatsApp sau WhatsApp Web
       window.open(url, "_blank");
     }
   };
@@ -131,7 +142,8 @@ const FloatingChatButton = () => {
               <div className="status-message">{statusMessage}</div>
             ) : (
               <form className="chat-form" onSubmit={handleSubmit}>
-                    <div className="contact-preference">
+                {/* Selector pentru metoda de contact */}
+                <div className="contact-preference">
                   <label>
                     Metoda de contact:
                     <select
@@ -143,6 +155,12 @@ const FloatingChatButton = () => {
                     </select>
                   </label>
                 </div>
+                {/* Mesaj informativ pentru WhatsApp */}
+                {contactPreference === "whatsapp" && (
+                  <div className="whatsapp-info">
+                    <p>{translations.whatsappInfo}</p>
+                  </div>
+                )}
                 <input
                   type="text"
                   placeholder={translations.subjectPlaceholder}
@@ -165,32 +183,60 @@ const FloatingChatButton = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   required
                 ></textarea>
-                {/* Selector pentru metoda de contact */}
-            
-                {contactPreference === "email" && (
-                  <div className="col-12">
-                    <label className="text-14">
-                      <input
-                        type="checkbox"
-                        checked={gdprConsent}
-                        onChange={() => setGdprConsent(!gdprConsent)}
-                        className="text-purple-1"
-                      />
-                      <span>
-                        {translations.gdprPrefix}
-                        <Link className="text-purple-1" href="/politica-de-confidentialitate">
-                          {translations.gdprPrivacyLink}
-                        </Link>
-                        {" și "}
-                        <Link className="text-purple-1" href="/politica-cookies">
-                          {translations.gdprCookiesLink}
-                        </Link>
-                        {translations.gdprSuffix}
-                      </span>
-                    </label>
-                  </div>
-                )}
-                <button type="submit">{translations.submitButton}</button>
+
+                <div className="col-12">
+                  <label className="text-14">
+                  <input
+  type="checkbox"
+  checked={gdprConsent}
+  onChange={() => setGdprConsent(!gdprConsent)}
+  style={{
+    width: "24px",          // crește lățimea
+    height: "24px",         // crește înălțimea
+    accentColor: gdprConsent ? "#28a745" : "#d9534f",  // culoare verde când este bifată, roșie când nu e bifată
+    border: "2px solid #333", // adaugă o margine
+    cursor: "pointer",
+    marginRight:"3%"
+  }}
+/>
+
+                    <span>
+                      {translations.gdprPrefix}
+                      <Link className="text-purple-1" href="/politica-de-confidentialitate">
+                        {translations.gdprPrivacyLink}
+                      </Link>
+                      {" și "}
+                      <Link className="text-purple-1" href="/politica-cookies">
+                        {translations.gdprCookiesLink}
+                      </Link>
+                      {translations.gdprSuffix}
+                    </span>
+                  </label>
+                </div>
+
+                {/* Butonul de trimitere: dezactivat (gri) dacă nu este bifat checkbox-ul */}
+                <button
+  type="submit"
+  disabled={!gdprConsent}
+  style={{
+    backgroundColor: !gdprConsent ? "#ccc" : "#28a745",
+    color: !gdprConsent ? "#666" : "#fff",
+    cursor: !gdprConsent ? "not-allowed" : "pointer",
+    border: "none",
+    borderRadius: "4px",
+    padding: "0.6rem 1rem",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    transition: "background-color 0.3s ease",
+  }}
+>
+  {
+    !gdprConsent
+      ? translations.consentButtonDisabled
+      : translations.submitButton
+  }
+</button>
+
               </form>
             )}
           </div>
