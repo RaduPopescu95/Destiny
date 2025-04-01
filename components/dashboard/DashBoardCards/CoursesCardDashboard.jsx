@@ -88,15 +88,14 @@ export default function CoursesCardDashboard({ data, translatedTexts }) {
         />
       </td>
       <td>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCardClick();
-          }}
+      <a
+          onClick={(e) => e.stopPropagation()}
+          href={`/informatii-utilizator?uid=${data.id}`}
+          target="_blank"
           className="btn btn-primary"
         >
           {translatedTexts.veziDetaliiText}
-        </button>
+        </a>
       </td>
     </tr>
   );

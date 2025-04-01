@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Terms() {
+export default function TermsConfidentialitate() {
   return (
     <>
       <section className="page-header -type-1">
