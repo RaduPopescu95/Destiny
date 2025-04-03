@@ -8,7 +8,9 @@ import Preloader from '@/components/common/Preloader'
 
 import FooterOne from '@/components/layout/footers/FooterOne'
 import Header from '@/components/layout/headers/Header'
+import MentinuniLegale from '@/components/terms/MentinuniLegale'
 import Terms from '@/components/terms/Terms'
+import { fetchTranslation } from '@/utils/translationUtils'
 import React from 'react'
 export const metadata = {
   title: 'Terms || Educrat - Professional LMS Online Education Course NextJS Template',
@@ -16,7 +18,7 @@ export const metadata = {
     'Elevate your e-learning content with Educrat, the most impressive LMS template for online courses, education and LMS platforms.',
   
 }
-export default async function page() {
+export default async function page({params}) {
   const targetLanguage = params.lang || "en";
     
   const translatedLinks = {
@@ -148,10 +150,12 @@ export default async function page() {
     <div className="main-content  ">
       <Preloader/>
 
-        <Header/>
+        <Header tarifsText={translatedLinks.tarifsText}
+                 methodeText={translatedLinks.methodeText}
+                 translatedLinks={translatedLinks}/>
         <div className="content-wrapper js-content-wrapper overflow-hidden">
             <PageLinks/>
-            <Terms/>
+            <MentinuniLegale/>
             <FooterOne/>
         </div>
 

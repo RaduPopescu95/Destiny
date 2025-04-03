@@ -5,10 +5,13 @@
 
 import PageLinks from '@/components/common/PageLinks'
 import Preloader from '@/components/common/Preloader'
+import FooterNine from '@/components/layout/footers/FooterNine'
 
 import FooterOne from '@/components/layout/footers/FooterOne'
 import Header from '@/components/layout/headers/Header'
 import Terms from '@/components/terms/Terms'
+import PrivacyPolicy from '@/components/terms/TermsConfidentialitate'
+import { fetchTranslation } from '@/utils/translationUtils'
 import React from 'react'
 export const metadata = {
   title: 'Destiny',
@@ -16,7 +19,7 @@ export const metadata = {
     'Destiny',
   
 }
-export default async function page() {
+export default async function page({params}) {
    const targetLanguage = params.lang || "en";
     
         const translatedLinks = {
@@ -148,11 +151,13 @@ export default async function page() {
     <div className="main-content  ">
       <Preloader/>
 
-        <Header/>
+        <Header   tarifsText={translatedLinks.tarifsText}
+                 methodeText={translatedLinks.methodeText}
+                 translatedLinks={translatedLinks}/>
         <div className="content-wrapper js-content-wrapper overflow-hidden">
             <PageLinks/>
-            <Terms/>
-            <FooterOne/>
+            <PrivacyPolicy/>
+           <FooterNine/>
         </div>
 
     </div>
