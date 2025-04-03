@@ -5,6 +5,7 @@
 
 import PageLinks from '@/components/common/PageLinks'
 import Preloader from '@/components/common/Preloader'
+import FooterNine from '@/components/layout/footers/FooterNine'
 
 import FooterOne from '@/components/layout/footers/FooterOne'
 import Header from '@/components/layout/headers/Header'
@@ -156,7 +157,7 @@ export default async function page({params}) {
         <div className="content-wrapper js-content-wrapper overflow-hidden">
             <PageLinks/>
             <MentinuniLegale/>
-            <FooterOne/>
+              <FooterNine/>
         </div>
 
     </div>
