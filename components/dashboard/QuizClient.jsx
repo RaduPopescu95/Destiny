@@ -768,7 +768,8 @@ const displayOption = (option) => {
   }
   if (quizFinished && !isEditQuiz) {
     // router.push("/pricing");
-    router.push("/subscriptions");
+    router.push("/profil-client");
+    // router.push("/subscriptions");
     // return <FinishedQuizComp translatedLinks={translatedLinks} />;
   }
 
