@@ -276,8 +276,18 @@ if(userData?.subscriptionActive)
     Insignă specială de utilizator premium
   </div>
 </div>
-
-                <div className="terms-acceptance mt-20">
+{/* asdads */}
+{/* asdads */}
+{/* asdads */}
+{/* asdads */}
+{/* asdads */}
+{/* asdads */}
+{/* asdads */}
+{/* asdads */}
+{/* asdads */}
+{/* asdads */}
+{/* asdads */}
+                {/* <div className="terms-acceptance mt-20">
                   <label>
                     <input
                       type="checkbox"
@@ -330,7 +340,7 @@ if(userData?.subscriptionActive)
                   </div>
                 <div className="d-inline-block mt-30">
             
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
