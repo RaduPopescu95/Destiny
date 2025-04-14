@@ -195,9 +195,13 @@ export default function SubscriptionsProfile({ activeTab, translatedTexts }) {
               userData?.subscriptionActive ||
               userData?.subscriptionStatus === "canceledUntilEnd" ? (
                 <>
-                <p className="text-14 lh-13 mt-5">
+                {
+                  subscription?.id && 
+
+              (  <p className="text-14 lh-13 mt-5">
                   {translatedTexts.subscriptionDetailsText}:
-                </p>
+                </p>)
+                }
                 <ul>
                   {subscription?.id && (
                     <li>
