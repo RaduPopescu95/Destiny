@@ -195,82 +195,86 @@ export default function SubscriptionsProfile({ activeTab, translatedTexts }) {
               userData?.subscriptionActive ||
               userData?.subscriptionStatus === "canceledUntilEnd" ? (
                 <>
-                  <p className="text-14 lh-13 mt-5">
-                    {translatedTexts.subscriptionDetailsText}:
-                  </p>
-                  <ul>
+                <p className="text-14 lh-13 mt-5">
+                  {translatedTexts.subscriptionDetailsText}:
+                </p>
+                <ul>
+                  {subscription?.id && (
                     <li>
                       <strong>{translatedTexts.subscriptionIdText}:</strong>{" "}
-                      {subscription?.id}
+                      {subscription.id}
                     </li>
+                  )}
+                  {subscription?.productName && (
                     <li>
                       <strong>{translatedTexts.planText}:</strong>{" "}
-                      {subscription?.productName}
+                      {subscription.productName}
                     </li>
+                  )}
+                  {subscription?.current_period_end && (
                     <li>
                       <strong>{translatedTexts.expiryDateText}:</strong>{" "}
-                      {new Date(
-                        subscription?.current_period_end * 1000
-                      ).toLocaleDateString()}
+                      {new Date(subscription.current_period_end * 1000).toLocaleDateString()}
                     </li>
-
+                  )}
+                  {userData?.subscriptionStatus && (
                     <li>
                       <strong>{translatedTexts.subscriptionStatusText}:</strong>{" "}
-                      {userData?.subscriptionStatus === "active"
+                      {userData.subscriptionStatus === "active"
                         ? translatedTexts.activeStatusText
-                        : userData?.subscriptionStatus === "canceledUntilEnd"
+                        : userData.subscriptionStatus === "canceledUntilEnd"
                         ? `${translatedTexts.subscriptionCanceledUntilText} ${
-                            userData?.subscriptionEndDate instanceof Date
+                            userData.subscriptionEndDate instanceof Date
                               ? userData.subscriptionEndDate.toLocaleDateString()
-                              : new Date(
-                                  userData?.subscriptionEndDate?.seconds * 1000
-                                ).toLocaleDateString()
+                              : new Date(userData.subscriptionEndDate?.seconds * 1000).toLocaleDateString()
                           }`
-                        : userData?.subscriptionStatus === "canceledImmediately"
+                        : userData.subscriptionStatus === "canceledImmediately"
                         ? translatedTexts.subscriptionCanceledImmediatelyText
                         : translatedTexts.subscriptionExpiredText}
                     </li>
-                  </ul>
-
-                  <div className="col-12">
-                    {canceling ? (
-                      <div className="spinner-container">
-                        <p>{translatedTexts.cancelingText}</p>
-                        <DotLoader color="#c13365" size={30} />
-                      </div>
-                    ) : reactivating ? (
-                      <div className="spinner-container">
-                        <p>{translatedTexts.reactivatingText}</p>
-                        <DotLoader color="#c13365" size={30} />
-                      </div>
-                    ) : userData.subscriptionStatus === "canceledUntilEnd" ? (
+                  )}
+                </ul>
+              
+                <div className="col-12">
+                  {canceling ? (
+                    <div className="spinner-container">
+                      <p>{translatedTexts.cancelingText}</p>
+                      <DotLoader color="#c13365" size={30} />
+                    </div>
+                  ) : reactivating ? (
+                    <div className="spinner-container">
+                      <p>{translatedTexts.reactivatingText}</p>
+                      <DotLoader color="#c13365" size={30} />
+                    </div>
+                  ) : userData?.subscriptionStatus === "canceledUntilEnd" ? (
+                    <button
+                      type="button"
+                      className="button -md -green-1 text-white"
+                      onClick={reactivateSubscription}
+                    >
+                      {translatedTexts.reactivateSubscriptionText}
+                    </button>
+                  ) : userData?.subscriptionStatus === "active" ? (
+                    <button
+                      type="button"
+                      className="button -md -red-1 text-white"
+                      onClick={confirmCancelSubscription}
+                    >
+                      {translatedTexts.cancelSubscriptionText}
+                    </button>
+                  ) : (
+                    <Link href="/subscriptions">
                       <button
                         type="button"
                         className="button -md -green-1 text-white"
-                        onClick={reactivateSubscription}
                       >
-                        {translatedTexts.reactivateSubscriptionText}
+                        {translatedTexts.newSubText}
                       </button>
-                    ) : userData?.subscriptionStatus === "active" ? (
-                      <button
-                        type="button"
-                        className="button -md -red-1 text-white"
-                        onClick={confirmCancelSubscription}
-                      >
-                        {translatedTexts.cancelSubscriptionText}
-                      </button>
-                    ) : (
-                      <Link href="/subscriptions">
-                        <button
-                          type="button"
-                          className="button -md -green-1 text-white"
-                        >
-                          {translatedTexts.newSubText}
-                        </button>
-                      </Link>
-                    )}
-                  </div>
-                </>
+                    </Link>
+                  )}
+                </div>
+              </>
+              
               ) : (
                 <p>
                   {translatedTexts.noSubscriptionText}{" "}
